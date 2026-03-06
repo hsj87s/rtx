@@ -7,8 +7,8 @@ const _geist = Geist({ subsets: ["latin"] });
 const _geistMono = Geist_Mono({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'Brawl Prime | مجتمع براول ستارز',
-  description: 'انضم إلى مجتمع Brawl Prime على تيليجرام وكن جزءاً من أقوى اتحاد في براول ستارز',
+  title: 'Brawl Prime | براول برايم',
+  description: 'نتشرف بانضمامكم جميعا',
   icons: {
     icon: [
       {

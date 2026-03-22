@@ -125,7 +125,7 @@ export function HeroSection() {
 
           {/* Clan Button */}
           <a
-            href="https://link.brawlstars.com/invite/band/en?tag=2VQCP9PU9&token=2akak8wp"
+            href="https://link.brawlstars.com/invite/band/en?tag=2VQCP9PU9&token=chnmfetw"
             target="_blank"
             rel="noopener noreferrer"
             className="group/btn relative inline-flex items-center justify-center gap-3 overflow-hidden rounded-2xl px-8 py-4 text-lg font-bold text-foreground transition-all duration-500"
